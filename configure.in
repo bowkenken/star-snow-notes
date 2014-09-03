@@ -1,0 +1,50 @@
+# Process this file with autoconf to produce a configure script.
+AC_INIT([star-snow-notes], [1.0.0],[bowkenken@users.sourceforge.jp])
+AC_CONFIG_AUX_DIR([config])
+AC_CONFIG_SRCDIR([src/main.cpp])
+AM_CONFIG_HEADER([src/config.h])
+AM_INIT_AUTOMAKE()
+
+AC_CANONICAL_HOST
+
+# Define macros.
+# debug
+AM_CONDITIONAL([CHK_DEBUG], [test "$enable_debug" = yes])
+
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+
+# Checks for libraries.
+AC_CHECK_LIB([m], [sin])
+AC_CHECK_LIB([GL], [glClear])
+AC_CHECK_LIB([SDL], [SDL/SDL_opengl])
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([locale.h])
+AC_CHECK_HEADERS([stdlib.h stddef.h stdio.h stdarg.h])
+AC_CHECK_HEADERS([limits.h string.h ctype.h time.h math.h])
+AC_CHECK_HEADERS([unistd.h dirent.h sys/stat.h])
+AC_CHECK_HEADERS([getopt.h])
+AC_CHECK_HEADERS([SDL/SDL.h SDL/SDL_opengl.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_MODE_T
+AC_TYPE_SIZE_T
+
+# Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([mkdir strchr strrchr strspn strstr strtol])
+AC_CHECK_FUNCS([getenv setenv])
+AC_CHECK_FUNCS([sin cos tan])
+AC_CHECK_FUNCS([getopt_long getopt])
+
+# End
+
+AC_CONFIG_FILES([Makefile man/Makefile src/Makefile])
+AC_OUTPUT

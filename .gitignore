@@ -19,3 +19,10 @@
 *.exe
 *.out
 *.app
+star-snow-notes
+
+# Autotools
+config.log
+
+# Misc.
+*~
