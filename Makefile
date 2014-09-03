@@ -230,9 +230,6 @@ top_build_prefix =
 top_builddir = .
 top_srcdir = .
 SUBDIRS = man src
-EXTRA_DIST = star-snow-notes.spec \
-	README-DOS.TXT README-MAC.TXT 
-
 all: all-recursive
 
 .SUFFIXES:
@@ -715,6 +712,7 @@ uninstall-am:
 	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
 	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am
 
+#EXTRA_DIST = star-snow-notes.spec
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
