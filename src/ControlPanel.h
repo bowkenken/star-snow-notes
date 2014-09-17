@@ -1,4 +1,4 @@
-/***************************************************************
+﻿/***************************************************************
 * Star Snow Notes
 * Copyright (c) 2012 YOSHIMURA Tomohiko All rights reserved.
 * 
@@ -7,23 +7,23 @@
 * 
 * License is GPL
 * 
-* �ܥץ������ϥե꡼�����եȥ������Ǥ���
-* ���ʤ��ϡ� Free Software Foundation ����ɽ����
-*  GNU ���̸�ͭ���ѵ����Ρ֥С�����󣲡�
-* ���Ϥ���ʹߤγƥС��������椫�餤���줫�����򤷡�
-* ���ΥС������������˽��ä��ܥץ�������
-* �����ۤޤ����ѹ����뤳�Ȥ��Ǥ��ޤ���
+* 本プログラムはフリー・ソフトウェアです。
+* あなたは、 Free Software Foundation が公表した
+*  GNU 一般公有使用許諾の「バージョン２」
+* 或はそれ以降の各バージョンの中からいずれかを選択し、
+* そのバージョンが定める条項に従って本プログラムを
+* 再頒布または変更することができます。
 * 
-* �ܥץ�������ͭ�ѤȤϻפ��ޤ��������ۤˤ����äƤϡ�
-* �Ծ����ڤ�������ŪŬ�����ˤĤ��Ƥΰ��ۤ��ݾڤ�ޤ��,
-* �����ʤ��ݾڤ�Ԥʤ��ޤ���
-* �ܺ٤ˤĤ��Ƥ� GNU ���̸�ͭ���ѵ�������ɤߤ���������
+* 本プログラムは有用とは思いますが、頒布にあたっては、
+* 市場性及び特定目的適合性についての暗黙の保証を含めて,
+* いかなる保証も行ないません。
+* 詳細については GNU 一般公有使用許諾書をお読みください。
 * 
-* ���ʤ��ϡ��ܥץ������Ȱ��� GNU ���̸�ͭ���ѵ�����
-* �μ̤��������äƤ���Ϥ��Ǥ��������Ǥʤ����ϡ�
+* あなたは、本プログラムと一緒に GNU 一般公有使用許諾書
+* の写しを受け取っているはずです。そうでない場合は、
 *   Free Software Foundation, Inc.,
 *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
-* �ؼ���񤤤Ƥ���������
+* へ手紙を書いてください。
 * 
 * $Id:$
 ***************************************************************/
@@ -36,7 +36,7 @@
 #include "Button.h"
 
 ////////////////////////////////////////////////////////////////
-// ������
+// 制御板
 ////////////////////////////////////////////////////////////////
 
 namespace StarSnowNotes {
@@ -45,45 +45,45 @@ class ControlPanel {
 public:
 
 private:
-	// �ǥե���Ȥ�ɽ���ΰ�Υ�����
+	// デフォルトの表示領域のサイズ
 	static const long defaultScreenWidth = 640;
 	static const long defaultScreenHeight = 480;
 
-	// �ܥ���γʻҤο�
+	// ボタンの格子の数
 	static const long gridHorizontalNum = 6;
 	static const long gridVerticalNum = 6;
 
-	// ���Υܥ���κ����
+	// 星のボタンの最大数
 	static const long starButtonMaxNum = 'z' - 'a' + 1;
 
 	Option optionSetting;
 
-	// ����椫?
+	// 停止中か?
 	bool flagFreezed;
-	// ���褹�뤫?
+	// 描画するか?
 	bool flagDraw;
-	// ���ƤΥܥ����ɽ�����뤫?
+	// 全てのボタンを表示するか?
 	bool flagDrawAllStarButton;
 
-	// ɽ���ΰ����
+	// 表示領域の幅
 	long screenWidth;
-	// ɽ���ΰ�ι⤵
+	// 表示領域の高さ
 	long screenHeight;
 
-	// ���ܥ�����гѤΥ�����ɥ���ɸ
+	// 星ボタンの対角のウィンドウ座標
 	long starWinMinX, starWinMinY, starWinMinZ;
 	long starWinMaxX, starWinMaxY, starWinMaxZ;
 
-	// �ܥ���
+	// ボタン
 	std::vector<StarSnowNotes::Button *> starButtonArray;
 	StarSnowNotes::Button *starButtonSpace;
 	StarSnowNotes::Button *starButtonEnter;
 
-	// �ޥ�����X��ɸ
+	// マウスのX座標
 	long mouseX;
-	// �ޥ�����Y��ɸ
+	// マウスのY座標
 	long mouseY;
-	// �ޥ����Υܥ���β�������
+	// マウスのボタンの押下状態
 	bool flagMouseButton[MouseButtonMax];
 
 public:

@@ -1,4 +1,4 @@
-/***************************************************************
+﻿/***************************************************************
 * Star Snow Notes
 * Copyright (c) 2012 YOSHIMURA Tomohiko All rights reserved.
 * 
@@ -7,23 +7,23 @@
 * 
 * License is GPL
 * 
-* �ܥץ������ϥե꡼�����եȥ������Ǥ���
-* ���ʤ��ϡ� Free Software Foundation ����ɽ����
-*  GNU ���̸�ͭ���ѵ����Ρ֥С�����󣲡�
-* ���Ϥ���ʹߤγƥС��������椫�餤���줫�����򤷡�
-* ���ΥС������������˽��ä��ܥץ�������
-* �����ۤޤ����ѹ����뤳�Ȥ��Ǥ��ޤ���
+* 本プログラムはフリー・ソフトウェアです。
+* あなたは、 Free Software Foundation が公表した
+*  GNU 一般公有使用許諾の「バージョン２」
+* 或はそれ以降の各バージョンの中からいずれかを選択し、
+* そのバージョンが定める条項に従って本プログラムを
+* 再頒布または変更することができます。
 * 
-* �ܥץ�������ͭ�ѤȤϻפ��ޤ��������ۤˤ����äƤϡ�
-* �Ծ����ڤ�������ŪŬ�����ˤĤ��Ƥΰ��ۤ��ݾڤ�ޤ��,
-* �����ʤ��ݾڤ�Ԥʤ��ޤ���
-* �ܺ٤ˤĤ��Ƥ� GNU ���̸�ͭ���ѵ�������ɤߤ���������
+* 本プログラムは有用とは思いますが、頒布にあたっては、
+* 市場性及び特定目的適合性についての暗黙の保証を含めて,
+* いかなる保証も行ないません。
+* 詳細については GNU 一般公有使用許諾書をお読みください。
 * 
-* ���ʤ��ϡ��ܥץ������Ȱ��� GNU ���̸�ͭ���ѵ�����
-* �μ̤��������äƤ���Ϥ��Ǥ��������Ǥʤ����ϡ�
+* あなたは、本プログラムと一緒に GNU 一般公有使用許諾書
+* の写しを受け取っているはずです。そうでない場合は、
 *   Free Software Foundation, Inc.,
 *   59 Temple Place, Suite 330, Boston, MA 02111-1307, USA
-* �ؼ���񤤤Ƥ���������
+* へ手紙を書いてください。
 * 
 * $Id:$
 ***************************************************************/
@@ -42,63 +42,63 @@
 namespace StarSnowNotes {
 
 ////////////////////////////////////////////////////////////////
-// ���� - ���δ���
+// 宇宙 - 星の管理
 ////////////////////////////////////////////////////////////////
 
 class Space {
 public:
 
 private:
-	// �����β�®��
+	// カメラの加速度
 	static const double spaceAX = 0.0002;
 	static const double spaceAY = 0.0002;
 	static const double spaceAZ = 0.0002;
 
-	// �����κǹ�®��
+	// カメラの最高速度
 	static const double spaceMaxVX = 0.02;
 	static const double spaceMaxVY = 0.02;
 	static const double spaceMaxVZ = 0.02;
 
-	// ����κ���Ⱦ��
+	// 宇宙の最大半径
 	static const double spaceMaxXR = 0.5;
 	static const double spaceMaxYR = 0.5;
 	static const double spaceMaxZR = 1.0;
 
-	// ���Υƥ�������κ����
+	// 星のテクスチャの最大数
 	static const long fgStarTextureMaxNum = 'z' - 'a' + 1;
 
-	// ���褹�뤫?
+	// 描画するか?
 	bool flagDraw;
-	// ����椫?
+	// 停止中か?
 	bool flagFreezed;
-	// ������ư������?�ޤ�������ư������?
+	// カメラを動かすか?または星を動かすか?
 	bool flagMoveCamera;
-	// ���ʤ�����ưŪ�����������뤫?
+	// 前景の星を自動的に生成させるか?
 	bool flagAutoBear;
 
-	// �����κ�ɸ
+	// カメラの座標
 	double x, y, z;
-	// �����β�®��
+	// カメラの加速度
 	double ax, ay, az;
 	double ax2, ay2, az2;
-	// �����ΰ�ư®��
+	// カメラの移動速度
 	double vx, vy, vz;
-	// �����Υ֥졼��
+	// カメラのブレーキ
 	bool bx, by, bz;
 
-	// �طʤΥƥ�������
+	// 背景のテクスチャ
 	GLuint bgTexture;
-	// ���Υƥ�������
+	// 星のテクスチャ
 	vector< vector<GLuint> > fgStarTexture;
 	vector<GLuint> bgStarTexture;
 
-	// ��
+	// 星
 	list<Star> fgStarArray;
 	list<Star> bgStarArray;
 
-	// ���ʤ�����ưŪ������������ե졼���
+	// 前景の星を自動的に生成させるフレーム数
 	long autoBearFrame;
-	// ľ���������������μ���
+	// 直前に生成した星の種類
 	char prevStarType;
 
 public:
