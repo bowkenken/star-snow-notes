@@ -129,21 +129,21 @@ void Option::init()
 		key[i] = ' ';
 		file[i] = ' ';
 	}
-	flag[OPTION_IDX_INIT] = false;
-	flag[OPTION_IDX_SAVE] = false;
-	num[OPTION_IDX_STAR_NUMBER] = 10240;
-	flag[OPTION_IDX_FULL_SCREEN] = false;
-	num[OPTION_IDX_FPS] = 30;
-	file[OPTION_IDX_BG_FILE] = "";
-	num[OPTION_IDX_INTERVAL_AUTO] = 30;
-	key[OPTION_IDX_AUTO_KEY] = '\0';
-	num[OPTION_IDX_X_SPEED] = +0.0;
-	num[OPTION_IDX_Y_SPEED] = +0.0;
-	num[OPTION_IDX_Z_SPEED] = +0.01;
-	flag[OPTION_IDX_REVERSE_X] = false;
-	flag[OPTION_IDX_REVERSE_Y] = true;
-	flag[OPTION_IDX_REVERSE_Z] = false;
-	flag[OPTION_IDX_REVERSE_SHIFT] = false;
+	setFlag(OPTION_IDX_INIT, false);
+	setFlag(OPTION_IDX_SAVE, false);
+	setNum(OPTION_IDX_STAR_NUMBER, 10240);
+	setFlag(OPTION_IDX_FULL_SCREEN, false);
+	setNum(OPTION_IDX_FPS, 30);
+	setFile(OPTION_IDX_BG_FILE, "");
+	setNum(OPTION_IDX_INTERVAL_AUTO, 30);
+	setKey(OPTION_IDX_AUTO_KEY, '\0');
+	setNum(OPTION_IDX_X_SPEED, +0.0);
+	setNum(OPTION_IDX_Y_SPEED, +0.0);
+	setNum(OPTION_IDX_Z_SPEED, +0.01);
+	setFlag(OPTION_IDX_REVERSE_X, false);
+	setFlag(OPTION_IDX_REVERSE_Y, true);
+	setFlag(OPTION_IDX_REVERSE_Z, false);
+	setFlag(OPTION_IDX_REVERSE_SHIFT, false);
 
 	for (int i = 0; i < CAPTION_MAX; i++) {
 		char str[128 + 1];
