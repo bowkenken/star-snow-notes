@@ -499,6 +499,13 @@ void Option::setFlag(OptionIdx idx, bool flag)
 		return;
 
 	this->flag[idx] = flag;
+	this->num[idx] = (double)flag;
+	this->key[idx] = ' ';
+	if (flag)
+		this->file[idx] = "true";
+	else
+		this->file[idx] = "false";
+
 	this->flagModified[idx] = true;
 }
 
@@ -515,7 +522,14 @@ void Option::setNum(OptionIdx idx, double num)
 	if (idx >= OPTION_IDX_MAX)
 		return;
 
+	this->flag[idx] = (bool)(long)num;
 	this->num[idx] = num;
+	this->key[idx] = ' ';
+	if ((long)num)
+		this->file[idx] = "true";
+	else
+		this->file[idx] = "false";
+
 	this->flagModified[idx] = true;
 }
 
@@ -532,7 +546,14 @@ void Option::setKey(OptionIdx idx, int key)
 	if (idx >= OPTION_IDX_MAX)
 		return;
 
+	this->flag[idx] = (bool)key;
+	this->num[idx] = (double)key;
 	this->key[idx] = key;
+	if (key)
+		this->file[idx] = "true";
+	else
+		this->file[idx] = "false";
+
 	this->flagModified[idx] = true;
 }
 
@@ -549,7 +570,11 @@ void Option::setFile(OptionIdx idx, const std::string &file)
 	if (idx >= OPTION_IDX_MAX)
 		return;
 
+	this->flag[idx] = true;
+	this->num[idx] = 0.0;
+	this->key[idx] = ' ';
 	this->file[idx] = file;
+
 	this->flagModified[idx] = true;
 }
 
