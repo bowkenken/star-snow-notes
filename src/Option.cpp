@@ -127,23 +127,23 @@ void Option::init()
 		flag[i] = false;
 		num[i] = 0.0;
 		key[i] = ' ';
-		file[i] = ' ';
+		file[i] = "err";
 	}
-	flag[OPTION_IDX_INIT] = false;
-	flag[OPTION_IDX_SAVE] = false;
-	num[OPTION_IDX_STAR_NUMBER] = 10240;
-	flag[OPTION_IDX_FULL_SCREEN] = false;
-	num[OPTION_IDX_FPS] = 30;
-	file[OPTION_IDX_BG_FILE] = "";
-	num[OPTION_IDX_INTERVAL_AUTO] = 30;
-	key[OPTION_IDX_AUTO_KEY] = '\0';
-	num[OPTION_IDX_X_SPEED] = +0.0;
-	num[OPTION_IDX_Y_SPEED] = +0.0;
-	num[OPTION_IDX_Z_SPEED] = +0.01;
-	flag[OPTION_IDX_REVERSE_X] = false;
-	flag[OPTION_IDX_REVERSE_Y] = true;
-	flag[OPTION_IDX_REVERSE_Z] = false;
-	flag[OPTION_IDX_REVERSE_SHIFT] = false;
+	setFlag(OPTION_IDX_INIT, false);
+	setFlag(OPTION_IDX_SAVE, false);
+	setNum(OPTION_IDX_STAR_NUMBER, 10240);
+	setFlag(OPTION_IDX_FULL_SCREEN, false);
+	setNum(OPTION_IDX_FPS, 30);
+	setFile(OPTION_IDX_BG_FILE, "");
+	setNum(OPTION_IDX_INTERVAL_AUTO, 30);
+	setKey(OPTION_IDX_AUTO_KEY, '\0');
+	setNum(OPTION_IDX_X_SPEED, +0.0);
+	setNum(OPTION_IDX_Y_SPEED, +0.0);
+	setNum(OPTION_IDX_Z_SPEED, +0.01);
+	setFlag(OPTION_IDX_REVERSE_X, false);
+	setFlag(OPTION_IDX_REVERSE_Y, true);
+	setFlag(OPTION_IDX_REVERSE_Z, false);
+	setFlag(OPTION_IDX_REVERSE_SHIFT, false);
 
 	for (int i = 0; i < CAPTION_MAX; i++) {
 		char str[128 + 1];
@@ -499,6 +499,13 @@ void Option::setFlag(OptionIdx idx, bool flag)
 		return;
 
 	this->flag[idx] = flag;
+	this->num[idx] = (double)flag;
+	this->key[idx] = ' ';
+	if (flag)
+		this->file[idx] = "true";
+	else
+		this->file[idx] = "false";
+
 	this->flagModified[idx] = true;
 }
 
@@ -515,7 +522,13 @@ void Option::setNum(OptionIdx idx, double num)
 	if (idx >= OPTION_IDX_MAX)
 		return;
 
+	this->flag[idx] = (bool)(long)num;
 	this->num[idx] = num;
+	this->key[idx] = ' ';
+	std::ostringstream str;
+	str << num;
+	this->file[idx] = str.str();
+
 	this->flagModified[idx] = true;
 }
 
@@ -532,7 +545,13 @@ void Option::setKey(OptionIdx idx, int key)
 	if (idx >= OPTION_IDX_MAX)
 		return;
 
+	this->flag[idx] = (bool)key;
+	this->num[idx] = (double)key;
 	this->key[idx] = key;
+	std::ostringstream str;
+	str << (char)key;
+	this->file[idx] = str.str();
+
 	this->flagModified[idx] = true;
 }
 
@@ -549,7 +568,11 @@ void Option::setFile(OptionIdx idx, const std::string &file)
 	if (idx >= OPTION_IDX_MAX)
 		return;
 
+	this->flag[idx] = true;
+	this->num[idx] = 0.0;
+	this->key[idx] = ' ';
 	this->file[idx] = file;
+
 	this->flagModified[idx] = true;
 }
 
