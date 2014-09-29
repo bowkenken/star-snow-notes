@@ -127,7 +127,7 @@ void Option::init()
 		flag[i] = false;
 		num[i] = 0.0;
 		key[i] = ' ';
-		file[i] = ' ';
+		file[i] = "err";
 	}
 	setFlag(OPTION_IDX_INIT, false);
 	setFlag(OPTION_IDX_SAVE, false);
