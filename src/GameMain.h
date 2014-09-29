@@ -42,6 +42,7 @@
 #endif // HAVE_STDIO_H
 
 #include <string>
+#include <sstream>
 #include <iterator>
 #include <list>
 #include <vector>

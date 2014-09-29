@@ -525,10 +525,9 @@ void Option::setNum(OptionIdx idx, double num)
 	this->flag[idx] = (bool)(long)num;
 	this->num[idx] = num;
 	this->key[idx] = ' ';
-	if ((long)num)
-		this->file[idx] = "true";
-	else
-		this->file[idx] = "false";
+	std::ostringstream str;
+	str << num;
+	this->file[idx] = str.str();
 
 	this->flagModified[idx] = true;
 }
@@ -549,10 +548,9 @@ void Option::setKey(OptionIdx idx, int key)
 	this->flag[idx] = (bool)key;
 	this->num[idx] = (double)key;
 	this->key[idx] = key;
-	if (key)
-		this->file[idx] = "true";
-	else
-		this->file[idx] = "false";
+	std::ostringstream str;
+	str << (char)key;
+	this->file[idx] = str.str();
 
 	this->flagModified[idx] = true;
 }
