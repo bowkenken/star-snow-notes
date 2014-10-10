@@ -96,6 +96,8 @@ int main(int argc, char **argv)
 	gSetting->init();
 	*gSetting = *gOption;
 
+	gSetting->saveAllConfig();//@@@
+
 	::initScreen(&argc, argv);
 
 	gMainSpace = new Space();

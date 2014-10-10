@@ -33,6 +33,7 @@
 #include <getopt.h>
 
 #include "GameMain.h"
+#include "FileList.h"
 #include "Option.h"
 
 using namespace StarSnowNotes;
@@ -41,9 +42,11 @@ using namespace StarSnowNotes;
 // 定数
 ////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////
-// 変数
-////////////////////////////////////////////////////////////////
+static const char *DEFAULT_GRAPH_DIR = "default";
+static const char *DEFAULT_MUSIC_DIR = "default";
+
+static const char *COMMON_CONFIG_FILE = "ssn-conf.txt";
+static const char *GRAPH_CONFIG_FILE = "ssn-graph-conf.txt";
 
 static const char *gStringOption = "is:n:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
 
@@ -101,6 +104,10 @@ static const char	gStringUsage[] = {
 };
 
 ////////////////////////////////////////////////////////////////
+// 変数
+////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////
 // 引数のコンストラクタ
 ////////////////////////////////////////////////////////////////
 
@@ -154,8 +161,215 @@ void Option::init()
 	captionEnter = "Enter:\n" "repeat";
 
 	argArray.clear();
-	stringGraphDir = "";
-	stringMusicDir = "";
+	stringGraphDir = DEFAULT_GRAPH_DIR;
+	stringMusicDir = DEFAULT_MUSIC_DIR;
+}
+
+////////////////////////////////////////////////////////////////
+// 全ての設定の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveAllConfig()
+{
+	saveCommonConfig();
+	saveGraphConfig();
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveCommonConfig()
+{
+	std::string path = getCommonConfigPath();
+
+	FILE *fp = openConfig(path.c_str(), "w");
+	if (fp == NULL)
+		return;
+
+	printfConfig(fp, "# Chosen Graphic Directly\n");
+	printfConfig(fp, "%s\n", quoteString(getStringGraphDir()).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# Chosen Music Directly\n");
+	printfConfig(fp, "%s\n", quoteString(getStringMusicDir()).c_str());
+	printfConfig(fp, "\n");
+
+	closeConfig(fp);
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveGraphConfig()
+{
+#if 0 //@@@
+	std::string dir = opt.getStringGraphDir();
+	if (dir == "")
+		dir = "default/";
+	// fprintf(stderr, "[texture=%s]\n", dir.c_str());
+	FileList::setStrDirSelGraph(dir);
+	FileList fls;
+	std::string path = ".";
+
+	// 宇宙の背景
+
+	path = "";	
+	std::string file = opt.getFile(OPTION_IDX_BG_FILE);
+	if (file != "") {
+		path = FileList::jointDir(fls.getBaseDir(), STR_DIR_SPACE_BG);
+		path = FileList::jointDir(path, file);
+	} else {
+		path = "";
+		fls.reset(STR_DIR_SPACE_BG, STR_GRAPH_FILE_EXT);
+		for (long i = 0; i < LOOP_MAX_100; ++i) {
+			std::string tmpPath = fls.next();
+			if (tmpPath == "")
+				break;
+			if ((rand() % (i + 1)) == 0)
+				path = tmpPath;
+		}
+		if (path == "") {
+			fprintf(stderr,
+				"ERROR: No files are in a directory: %s",
+				STR_DIR_SPACE_BG);
+			::exitGame(EXIT_FAILURE);
+		}
+	}
+	bgTexture = ::loadTexture(path.c_str(), NULL, NULL);
+	if (bgTexture == 0)
+		::exitGame(EXIT_FAILURE);
+
+	// 前景の星
+
+	char starCStr[1 + 1] = "a";
+	std::string starStr = "a";
+
+	fgStarTexture.resize(fgStarTextureMaxNum);
+	for (long i = 0; i < fgStarTextureMaxNum; ++i) {
+		starCStr[0] = 'a' + i;
+		starStr = fls.jointDir(STR_DIR_STAR_FG, starCStr);
+
+		fls.reset(starStr, STR_GRAPH_FILE_EXT);
+		for (long j = 0; ; ++j) {
+			path = fls.next();
+			if (path == "")
+				break;
+
+			fgStarTexture[i].push_back(::loadTexture(
+				path.c_str(), NULL, NULL));
+			if (fgStarTexture[i][j] == 0)
+				break;
+		}
+	}
+
+	// 背景の星
+
+	fls.reset(STR_DIR_STAR_BG, STR_GRAPH_FILE_EXT);
+	for (long j = 0; ; ++j) {
+		path = fls.next();
+		if (path == "")
+			break;
+
+		bgStarTexture.push_back(::loadTexture(path.c_str(),
+			NULL, NULL));
+		if (bgStarTexture[j] == 0)
+			break;
+	}
+	if (bgStarTexture.empty()) {
+		fprintf(stderr,
+			"ERROR: No files are in a directory: %s",
+			STR_DIR_STAR_BG);
+		::exitGame(EXIT_FAILURE);
+	}
+#endif //@@@
+}
+
+////////////////////////////////////////////////////////////////
+// 設定ファイルをオープン
+// const char *path : 設定ファイルのパス
+// const char *mode : オープン・モード
+// return : ファイル・ポインタ
+////////////////////////////////////////////////////////////////
+
+FILE *Option::openConfig(const char *path, const char *mode)
+{
+	FILE *fp = fopen(path, mode);
+
+	if (fp == NULL)
+		perror("ERROR");
+
+	return fp;
+}
+
+////////////////////////////////////////////////////////////////
+// 設定ファイルをクローズ
+// FILE *fp : 設定ファイルのファイル・ポインタ
+// return : エラーならEOF
+////////////////////////////////////////////////////////////////
+
+int Option::closeConfig(FILE *fp)
+{
+	int res = fclose(fp);
+
+	if (res == EOF)
+		perror("ERROR");
+
+	return res;
+}
+
+////////////////////////////////////////////////////////////////
+// フォーマット文字列をセーブ
+// FILE *fp : ファイル
+// const char *fmt : フォーマット文字列
+// ... : 引数
+// return : エラーならEOF
+////////////////////////////////////////////////////////////////
+
+int Option::printfConfig(FILE *fp, const char *fmt, ...)
+{
+	va_list argptr;
+
+	va_start(argptr, fmt);
+	int res = vfprintf(fp, fmt, argptr);
+	va_end(argptr);
+
+	if (res == EOF)
+		perror("ERROR");
+
+	return res;
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定のパスを取得
+////////////////////////////////////////////////////////////////
+
+std::string Option::getCommonConfigPath()
+{
+	std::string path = "";
+	path = FileList::jointDir( FileList::getHomeDir(), STR_DIR_BASE );
+	path = FileList::jointDir( path, COMMON_CONFIG_FILE );
+	// fprintf(stderr, "[common option file path=%s]\n", path.c_str());
+
+	return path;
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定のパスを取得
+////////////////////////////////////////////////////////////////
+
+std::string Option::getGraphConfigPath()
+{
+	std::string dir = getStringGraphDir();
+
+	std::string path = "";
+	path = FileList::jointDir( FileList::getHomeDir(), STR_DIR_BASE );
+	path = FileList::jointDir( path, dir );
+	path = FileList::jointDir( path, GRAPH_CONFIG_FILE );
+	// fprintf(stderr, "[graph option file path=%s]\n", path.c_str());
+
+	return path;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -674,6 +888,18 @@ std::string Option::getStringGraphDir()
 std::string Option::getStringMusicDir()
 {
 	return stringMusicDir;
+}
+
+////////////////////////////////////////////////////////////////
+// 文字列をクォーティング
+// std::string str : 文字列
+// return : クォーティング後の文字列
+////////////////////////////////////////////////////////////////
+
+std::string Option::quoteString(std::string str)
+{
+	//@@@
+	return str;
 }
 
 ////////////////////////////////////////////////////////////////

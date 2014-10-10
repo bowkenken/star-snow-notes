@@ -94,6 +94,15 @@ public:
 	~Option();
 	void init();
 
+	void saveAllConfig();
+	// void saveCommonConfig();
+	// void saveGraphConfig();
+	// FILE *openConfig(const char *path, const char *mode);
+	// int closeConfig(const FILE *fp);
+	// int printfConfig(FILE *fp, const char *fmt, ...);
+	// std::string getCommonConfigPath();
+	// std::string getGraphConfigPath();
+
 	void checkOption(int argc, char **argv);
 	// void checkArg(int argc, char **argv, int optind);
 	// void checkKeyValue(
@@ -117,10 +126,20 @@ public:
 	std::string getStringGraphDir();
 	std::string getStringMusicDir();
 
+	std::string quoteString(std::string str);
+
 	void usage(FILE *fp);
 	void version(FILE *fp);
 
 private:
+	void saveCommonConfig();
+	void saveGraphConfig();
+	FILE *openConfig(const char *path, const char *mode);
+	int closeConfig(FILE *fp);
+	int printfConfig(FILE *fp, const char *fmt, ...);
+	std::string getCommonConfigPath();
+	std::string getGraphConfigPath();
+
 	void checkArg(int argc, char **argv, int optind);
 	void checkKeyValue(const std::string &key, const std::string &value);
 
