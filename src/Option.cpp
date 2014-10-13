@@ -247,6 +247,15 @@ void Option::saveCommonConfigContents(FILE *fp)
 
 void Option::saveGraphConfig()
 {
+	std::string path = getGraphConfigPath();
+
+	FILE *fp = openConfig(path.c_str(), "w");
+	if (fp == NULL)
+		return;
+
+	saveGraphConfigContents(fp);
+
+	closeConfig(fp);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -258,86 +267,76 @@ void Option::saveGraphConfigContents(FILE *fp)
 	if (fp == NULL)
 		return;
 
-#if 0 //@@@
-	std::string dir = opt.getStringGraphDir();
-	if (dir == "")
-		dir = "default/";
-	// fprintf(stderr, "[texture=%s]\n", dir.c_str());
-	FileList::setStrDirSelGraph(dir);
-	FileList fls;
-	std::string path = ".";
+	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
+	printfConfig(fp, "# Graphic Config file\n");
 
-	// 宇宙の背景
+	saveConfigVersion(fp);
+	printfConfig(fp, "\n");
 
-	path = "";	
-	std::string file = opt.getFile(OPTION_IDX_BG_FILE);
-	if (file != "") {
-		path = FileList::jointDir(fls.getBaseDir(), STR_DIR_SPACE_BG);
-		path = FileList::jointDir(path, file);
-	} else {
-		path = "";
-		fls.reset(STR_DIR_SPACE_BG, STR_GRAPH_FILE_EXT);
-		for (long i = 0; i < LOOP_MAX_100; ++i) {
-			std::string tmpPath = fls.next();
-			if (tmpPath == "")
-				break;
-			if ((rand() % (i + 1)) == 0)
-				path = tmpPath;
-		}
-		if (path == "") {
-			fprintf(stderr,
-				"ERROR: No files are in a directory: %s",
-				STR_DIR_SPACE_BG);
-			::exitGame(EXIT_FAILURE);
-		}
-	}
-	bgTexture = ::loadTexture(path.c_str(), NULL, NULL);
-	if (bgTexture == 0)
-		::exitGame(EXIT_FAILURE);
+	printfConfig(fp, "# number of star\n");
+	printfConfig(fp, "--star-number %ld\n",
+		(long)getNum(OPTION_IDX_STAR_NUMBER));
+	printfConfig(fp, "\n");
 
-	// 前景の星
+	printfConfig(fp, "# flag of full screen\n");
+	printfConfig(fp, "--full-screen %s\n",
+		quoteString(getFlagString(OPTION_IDX_FULL_SCREEN)).c_str());
+	printfConfig(fp, "\n");
 
-	char starCStr[1 + 1] = "a";
-	std::string starStr = "a";
+	printfConfig(fp, "# frame per second\n");
+	printfConfig(fp, "--fps %ld\n",
+		(long)getNum(OPTION_IDX_FPS));
+	printfConfig(fp, "\n");
 
-	fgStarTexture.resize(fgStarTextureMaxNum);
-	for (long i = 0; i < fgStarTextureMaxNum; ++i) {
-		starCStr[0] = 'a' + i;
-		starStr = fls.jointDir(STR_DIR_STAR_FG, starCStr);
+	printfConfig(fp, "# file of back ground\n");
+	printfConfig(fp, "--bg-file %s\n",
+		quoteString(getFile(OPTION_IDX_BG_FILE)).c_str());
+	printfConfig(fp, "\n");
 
-		fls.reset(starStr, STR_GRAPH_FILE_EXT);
-		for (long j = 0; ; ++j) {
-			path = fls.next();
-			if (path == "")
-				break;
+	printfConfig(fp, "# frame of interval of auto inputed key\n");
+	printfConfig(fp, "--interval-auto %ld\n",
+		(long)getNum(OPTION_IDX_INTERVAL_AUTO));
+	printfConfig(fp, "\n");
 
-			fgStarTexture[i].push_back(::loadTexture(
-				path.c_str(), NULL, NULL));
-			if (fgStarTexture[i][j] == 0)
-				break;
-		}
-	}
+	printfConfig(fp, "# auto inputed key\n");
+	printfConfig(fp, "--auto-key %s\n",
+		quoteString(getKeyString(OPTION_IDX_AUTO_KEY)).c_str());
+	printfConfig(fp, "\n");
 
-	// 背景の星
+	printfConfig(fp, "# speed of the x-axis direction\n");
+	printfConfig(fp, "--x-speed %lf\n",
+		getNum(OPTION_IDX_X_SPEED));
+	printfConfig(fp, "\n");
 
-	fls.reset(STR_DIR_STAR_BG, STR_GRAPH_FILE_EXT);
-	for (long j = 0; ; ++j) {
-		path = fls.next();
-		if (path == "")
-			break;
+	printfConfig(fp, "# speed of the y-axis direction\n");
+	printfConfig(fp, "--y-speed %lf\n",
+		getNum(OPTION_IDX_Y_SPEED));
+	printfConfig(fp, "\n");
 
-		bgStarTexture.push_back(::loadTexture(path.c_str(),
-			NULL, NULL));
-		if (bgStarTexture[j] == 0)
-			break;
-	}
-	if (bgStarTexture.empty()) {
-		fprintf(stderr,
-			"ERROR: No files are in a directory: %s",
-			STR_DIR_STAR_BG);
-		::exitGame(EXIT_FAILURE);
-	}
-#endif //@@@
+	printfConfig(fp, "# speed of the z-axis direction\n");
+	printfConfig(fp, "--z-speed %lf\n",
+		getNum(OPTION_IDX_Z_SPEED));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of reversing x-axis\n");
+	printfConfig(fp, "--reverse-x %s\n",
+		quoteString(getFlagString(OPTION_IDX_REVERSE_X)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of reversing y-axis\n");
+	printfConfig(fp, "--reverse-y %s\n",
+		quoteString(getFlagString(OPTION_IDX_REVERSE_Y)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of reversing z-axis\n");
+	printfConfig(fp, "--reverse-z %s\n",
+		quoteString(getFlagString(OPTION_IDX_REVERSE_Z)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of reversing shift key\n");
+	printfConfig(fp, "--reverse-shift %s\n",
+		quoteString(getFlagString(OPTION_IDX_REVERSE_SHIFT)).c_str());
+	printfConfig(fp, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -418,7 +417,8 @@ std::string Option::getGraphConfigPath()
 	std::string dir = getStringGraphDir();
 
 	std::string path = "";
-	path = FileList::jointDir( FileList::getHomeDir(), STR_DIR_BASE );
+	path = FileList::jointDir( FileList::getHomeDir(),
+		STR_DIR_BASE_GRAPH );
 	path = FileList::jointDir( path, dir );
 	path = FileList::jointDir( path, GRAPH_CONFIG_FILE );
 	// fprintf(stderr, "[graph option file path=%s]\n", path.c_str());
@@ -845,6 +845,28 @@ void Option::setFile(OptionIdx idx, const std::string &file)
 }
 
 ////////////////////////////////////////////////////////////////
+// フラグの配列の値を文字列に変換して取得
+// OptionIdx idx : 配列のインデックス
+// return : フラグ
+////////////////////////////////////////////////////////////////
+
+std::string Option::getFlagString(OptionIdx idx)
+{
+	if (idx < 0)
+		return false;
+	if (idx >= OPTION_IDX_MAX)
+		return false;
+
+	std::string str;
+	if (this->flag[idx])
+		str = "true";
+	else
+		str = "false";
+
+	return str;
+}
+
+////////////////////////////////////////////////////////////////
 // フラグの配列の値を取得
 // OptionIdx idx : 配列のインデックス
 // return : フラグ
@@ -877,6 +899,22 @@ double Option::getNum(OptionIdx idx)
 }
 
 ////////////////////////////////////////////////////////////////
+// キーの配列の値を文字列に変換して取得
+// OptionIdx idx : 配列のインデックス
+// return : キー
+////////////////////////////////////////////////////////////////
+
+std::string Option::getKeyString(OptionIdx idx)
+{
+	if (idx < 0)
+		return " ";
+	if (idx >= OPTION_IDX_MAX)
+		return " ";
+
+	return convertKeyToString(this->key[idx]);
+}
+
+////////////////////////////////////////////////////////////////
 // キーの配列の値を取得
 // OptionIdx idx : 配列のインデックス
 // return : キー
@@ -898,6 +936,7 @@ int Option::getKey(OptionIdx idx)
 // return : ファイル名
 ////////////////////////////////////////////////////////////////
 
+//@@@ del const
 const std::string &Option::getFile(OptionIdx idx)
 {
 	static const std::string strErr = "";
@@ -934,14 +973,32 @@ std::string Option::getCaption(char key)
 	return caption[n];
 }
 
+//@@@
+
 std::string Option::getStringGraphDir()
 {
 	return stringGraphDir;
 }
 
+//@@@
+
 std::string Option::getStringMusicDir()
 {
 	return stringMusicDir;
+}
+
+////////////////////////////////////////////////////////////////
+// キーを文字列に変換
+// int key : キー
+// return : 変換後の文字列
+////////////////////////////////////////////////////////////////
+
+std::string Option::convertKeyToString(int key)
+{
+	char buf[31 + 1] = " ";
+	sprintf(buf, "%c", key);
+
+	return buf;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -953,7 +1010,12 @@ std::string Option::getStringMusicDir()
 std::string Option::quoteString(std::string str)
 {
 	//@@@
-	return str;
+	std::string s = "";
+	s = "\"";
+	s += str;
+	s += "\"";
+
+	return s;
 }
 
 ////////////////////////////////////////////////////////////////

@@ -120,8 +120,10 @@ public:
 	void setKey(OptionIdx idx, int key);
 	void setFile(OptionIdx idx, const std::string &file);
 
+	std::string getFlagString(OptionIdx idx);
 	bool getFlag(OptionIdx idx);
 	double getNum(OptionIdx idx);
+	std::string getKeyString(OptionIdx idx);
 	int getKey(OptionIdx idx);
 	const std::string &getFile(OptionIdx idx);
 
@@ -129,6 +131,7 @@ public:
 	std::string getStringGraphDir();
 	std::string getStringMusicDir();
 
+	std::string convertKeyToString(int key);
 	std::string quoteString(std::string str);
 
 	void usage(FILE *fp);
