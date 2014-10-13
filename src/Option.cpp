@@ -42,16 +42,26 @@ using namespace StarSnowNotes;
 // 定数
 ////////////////////////////////////////////////////////////////
 
+// 設定ファイルのバージョン番号
+// 設定ファイルの仕様に変更が有った時だけ
+// その時点のプログラムのバージョンと同じ数字に上げて一致させる。
+// 変更が無ければ、そのままにして置く。
+static const long OPTION_VERSION_MAJOR = 1;
+static const long OPTION_VERSION_MINOR = 0;
+static const long OPTION_VERSION_PATCH = 0;
+// 変更履歴
+// 1.0.0 : 2014/10/13 Initial version
+
 static const char *DEFAULT_GRAPH_DIR = "default";
 static const char *DEFAULT_MUSIC_DIR = "default";
 
 static const char *COMMON_CONFIG_FILE = "ssn-conf.txt";
 static const char *GRAPH_CONFIG_FILE = "ssn-graph-conf.txt";
 
-static const char *gStringOption = "is:n:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
+static const char gStringOption[] = "is:n:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
 
 #ifdef	HAVE_GETOPT_LONG
-static struct option	gLongOption[] = {
+static const struct option	gLongOption[] = {
 	{ "init",           no_argument,       NULL, 'i' },
 	{ "save",           required_argument, NULL, 's' },
 	{ "star-number",    required_argument, NULL, 'n' },
@@ -176,6 +186,23 @@ void Option::saveAllConfig()
 }
 
 ////////////////////////////////////////////////////////////////
+// バージョン番号の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveConfigVersion(FILE *fp)
+{
+	printfConfig(fp, "# Program Ver.%s\n",
+		STRING_VERSION_GAME);
+
+	printfConfig(fp, "# Config Ver.%ld.%ld.%ld\n",
+		OPTION_VERSION_MAJOR,
+		OPTION_VERSION_MINOR,
+		OPTION_VERSION_PATCH);
+
+	printfConfig(fp, "\n");
+}
+
+////////////////////////////////////////////////////////////////
 // 共通設定の保存
 ////////////////////////////////////////////////////////////////
 
@@ -186,6 +213,11 @@ void Option::saveCommonConfig()
 	FILE *fp = openConfig(path.c_str(), "w");
 	if (fp == NULL)
 		return;
+
+	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
+	printfConfig(fp, "# Common Config file\n");
+
+	saveConfigVersion(fp);
 
 	printfConfig(fp, "# Chosen Graphic Directly\n");
 	printfConfig(fp, "%s\n", quoteString(getStringGraphDir()).c_str());

@@ -95,6 +95,7 @@ public:
 	void init();
 
 	void saveAllConfig();
+	// void saveConfigVersion(FILE *fp);
 	// void saveCommonConfig();
 	// void saveGraphConfig();
 	// FILE *openConfig(const char *path, const char *mode);
@@ -132,6 +133,7 @@ public:
 	void version(FILE *fp);
 
 private:
+	void saveConfigVersion(FILE *fp);
 	void saveCommonConfig();
 	void saveGraphConfig();
 	FILE *openConfig(const char *path, const char *mode);
