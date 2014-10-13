@@ -198,8 +198,6 @@ void Option::saveConfigVersion(FILE *fp)
 		OPTION_VERSION_MAJOR,
 		OPTION_VERSION_MINOR,
 		OPTION_VERSION_PATCH);
-
-	printfConfig(fp, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -214,10 +212,25 @@ void Option::saveCommonConfig()
 	if (fp == NULL)
 		return;
 
+	saveCommonConfigContents(fp);
+
+	closeConfig(fp);
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定の内容の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveCommonConfigContents(FILE *fp)
+{
+	if (fp == NULL)
+		return;
+
 	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
 	printfConfig(fp, "# Common Config file\n");
 
 	saveConfigVersion(fp);
+	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Graphic Directly\n");
 	printfConfig(fp, "%s\n", quoteString(getStringGraphDir()).c_str());
@@ -226,8 +239,6 @@ void Option::saveCommonConfig()
 	printfConfig(fp, "# Chosen Music Directly\n");
 	printfConfig(fp, "%s\n", quoteString(getStringMusicDir()).c_str());
 	printfConfig(fp, "\n");
-
-	closeConfig(fp);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -236,6 +247,17 @@ void Option::saveCommonConfig()
 
 void Option::saveGraphConfig()
 {
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定の内容の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveGraphConfigContents(FILE *fp)
+{
+	if (fp == NULL)
+		return;
+
 #if 0 //@@@
 	std::string dir = opt.getStringGraphDir();
 	if (dir == "")
