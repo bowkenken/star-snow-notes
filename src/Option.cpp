@@ -936,15 +936,12 @@ int Option::getKey(OptionIdx idx)
 // return : ファイル名
 ////////////////////////////////////////////////////////////////
 
-//@@@ del const
-const std::string &Option::getFile(OptionIdx idx)
+std::string Option::getFile(OptionIdx idx)
 {
-	static const std::string strErr = "";
-
 	if (idx < 0)
-		return strErr;
+		return "";
 	if (idx >= OPTION_IDX_MAX)
-		return strErr;
+		return "";
 
 	return this->file[idx];
 }

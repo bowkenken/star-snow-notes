@@ -125,7 +125,7 @@ public:
 	double getNum(OptionIdx idx);
 	std::string getKeyString(OptionIdx idx);
 	int getKey(OptionIdx idx);
-	const std::string &getFile(OptionIdx idx);
+	std::string getFile(OptionIdx idx);
 
 	std::string getCaption(char key);
 	std::string getStringGraphDir();
