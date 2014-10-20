@@ -181,6 +181,9 @@ void Option::init()
 
 void Option::saveAllConfig()
 {
+	if (!getFlag(OPTION_IDX_SAVE))
+		return;
+
 	saveCommonConfig();
 	saveGraphConfig();
 }
