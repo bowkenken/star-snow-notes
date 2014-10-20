@@ -133,6 +133,7 @@ public:
 
 	std::string convertKeyToString(int key);
 	std::string quoteString(std::string str);
+	std::string escapeString(std::string str, bool flagEscapeSpace);
 
 	void usage(FILE *fp);
 	void version(FILE *fp);

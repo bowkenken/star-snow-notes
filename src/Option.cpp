@@ -1011,11 +1011,52 @@ std::string Option::convertKeyToString(int key)
 
 std::string Option::quoteString(std::string str)
 {
-	//@@@
 	std::string s = "";
 	s = "\"";
-	s += str;
+	s += escapeString(str, false);
 	s += "\"";
+
+	return s;
+}
+
+////////////////////////////////////////////////////////////////
+// 文字列内の特殊文字をエスケープ
+// std::string str : 文字列
+// return : エスケープ後の文字列
+////////////////////////////////////////////////////////////////
+
+std::string Option::escapeString(std::string str, bool flagEscapeSpace)
+{
+	std::string s = "";
+	for (string::iterator it = str.begin(); it != str.end(); ++it) {
+		int c = *it;
+		switch (c) {
+		case '\\':
+			s += '\\';
+			s += '\\';
+			break;
+		case '\"':
+			s += '\\';
+			s += '\"';
+			break;
+		case '\'':
+			s += '\\';
+			s += '\'';
+			break;
+		case ' ':
+			if (flagEscapeSpace)
+				s += '\\';
+			s += ' ';
+			break;
+		case '\n':
+			s += '\\';
+			s += 'n';
+			break;
+		default:
+			s += c;
+			break;
+		}
+	}
 
 	return s;
 }
