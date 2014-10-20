@@ -94,8 +94,10 @@ int main(int argc, char **argv)
 
 	gSetting = new Option;
 	gSetting->init();
-	*gSetting = *gOption;
+	//@@@ *gSetting = *gOption;
 
+	gSetting->loadAllConfig(gOption);
+	gSetting->mergeAllConfig(gOption);
 	gSetting->saveAllConfig();
 
 	::initScreen(&argc, argv);
