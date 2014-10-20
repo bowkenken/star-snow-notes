@@ -33,6 +33,7 @@
 #include <getopt.h>
 
 #include "GameMain.h"
+#include "FileList.h"
 #include "Option.h"
 
 using namespace StarSnowNotes;
@@ -41,14 +42,26 @@ using namespace StarSnowNotes;
 // 定数
 ////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////
-// 変数
-////////////////////////////////////////////////////////////////
+// 設定ファイルのバージョン番号
+// 設定ファイルの仕様に変更が有った時だけ
+// その時点のプログラムのバージョンと同じ数字に上げて一致させる。
+// 変更が無ければ、そのままにして置く。
+static const long OPTION_VERSION_MAJOR = 1;
+static const long OPTION_VERSION_MINOR = 0;
+static const long OPTION_VERSION_PATCH = 0;
+// 変更履歴
+// 1.0.0 : 2014/10/13 Initial version
 
-static const char *gStringOption = "is:n:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
+static const char *DEFAULT_GRAPH_DIR = "default";
+static const char *DEFAULT_MUSIC_DIR = "default";
+
+static const char *COMMON_CONFIG_FILE = "ssn-conf.txt";
+static const char *GRAPH_CONFIG_FILE = "ssn-graph-conf.txt";
+
+static const char gStringOption[] = "is:n:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
 
 #ifdef	HAVE_GETOPT_LONG
-static struct option	gLongOption[] = {
+static const struct option	gLongOption[] = {
 	{ "init",           no_argument,       NULL, 'i' },
 	{ "save",           required_argument, NULL, 's' },
 	{ "star-number",    required_argument, NULL, 'n' },
@@ -99,6 +112,10 @@ static const char	gStringUsage[] = {
 	"  -d, --debug               debugging mode\n"
 #endif
 };
+
+////////////////////////////////////////////////////////////////
+// 変数
+////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////
 // 引数のコンストラクタ
@@ -154,8 +171,273 @@ void Option::init()
 	captionEnter = "Enter:\n" "repeat";
 
 	argArray.clear();
-	stringGraphDir = "";
-	stringMusicDir = "";
+	stringGraphDir = DEFAULT_GRAPH_DIR;
+	stringMusicDir = DEFAULT_MUSIC_DIR;
+}
+
+////////////////////////////////////////////////////////////////
+// 全ての設定の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveAllConfig()
+{
+	saveCommonConfig();
+	saveGraphConfig();
+}
+
+////////////////////////////////////////////////////////////////
+// バージョン番号の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveConfigVersion(FILE *fp)
+{
+	printfConfig(fp, "# Program Ver.%s\n",
+		STRING_VERSION_GAME);
+
+	printfConfig(fp, "# Config Ver.%ld.%ld.%ld\n",
+		OPTION_VERSION_MAJOR,
+		OPTION_VERSION_MINOR,
+		OPTION_VERSION_PATCH);
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveCommonConfig()
+{
+	std::string path = getCommonConfigPath();
+
+	FILE *fp = openConfig(path.c_str(), "w");
+	if (fp == NULL)
+		return;
+
+	saveCommonConfigContents(fp);
+
+	closeConfig(fp);
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定の内容の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveCommonConfigContents(FILE *fp)
+{
+	if (fp == NULL)
+		return;
+
+	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
+	printfConfig(fp, "# Common Config file\n");
+
+	saveConfigVersion(fp);
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# Chosen Graphic Directly\n");
+	printfConfig(fp, "%s\n", quoteString(getStringGraphDir()).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# Chosen Music Directly\n");
+	printfConfig(fp, "%s\n", quoteString(getStringMusicDir()).c_str());
+	printfConfig(fp, "\n");
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveGraphConfig()
+{
+	std::string path = getGraphConfigPath();
+
+	FILE *fp = openConfig(path.c_str(), "w");
+	if (fp == NULL)
+		return;
+
+	saveGraphConfigContents(fp);
+
+	closeConfig(fp);
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定の内容の保存
+////////////////////////////////////////////////////////////////
+
+void Option::saveGraphConfigContents(FILE *fp)
+{
+	if (fp == NULL)
+		return;
+
+	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
+	printfConfig(fp, "# Graphic Config file\n");
+
+	saveConfigVersion(fp);
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# number of star\n");
+	printfConfig(fp, "--star-number %ld\n",
+		(long)getNum(OPTION_IDX_STAR_NUMBER));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of full screen\n");
+	printfConfig(fp, "--full-screen %s\n",
+		quoteString(getFlagString(OPTION_IDX_FULL_SCREEN)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# frame per second\n");
+	printfConfig(fp, "--fps %ld\n",
+		(long)getNum(OPTION_IDX_FPS));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# file of back ground\n");
+	printfConfig(fp, "--bg-file %s\n",
+		quoteString(getFile(OPTION_IDX_BG_FILE)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# frame of interval of auto inputed key\n");
+	printfConfig(fp, "--interval-auto %ld\n",
+		(long)getNum(OPTION_IDX_INTERVAL_AUTO));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# auto inputed key\n");
+	printfConfig(fp, "--auto-key %s\n",
+		quoteString(getKeyString(OPTION_IDX_AUTO_KEY)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# speed of the x-axis direction\n");
+	printfConfig(fp, "--x-speed %lf\n",
+		getNum(OPTION_IDX_X_SPEED));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# speed of the y-axis direction\n");
+	printfConfig(fp, "--y-speed %lf\n",
+		getNum(OPTION_IDX_Y_SPEED));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# speed of the z-axis direction\n");
+	printfConfig(fp, "--z-speed %lf\n",
+		getNum(OPTION_IDX_Z_SPEED));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of reversing x-axis\n");
+	printfConfig(fp, "--reverse-x %s\n",
+		quoteString(getFlagString(OPTION_IDX_REVERSE_X)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of reversing y-axis\n");
+	printfConfig(fp, "--reverse-y %s\n",
+		quoteString(getFlagString(OPTION_IDX_REVERSE_Y)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of reversing z-axis\n");
+	printfConfig(fp, "--reverse-z %s\n",
+		quoteString(getFlagString(OPTION_IDX_REVERSE_Z)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# flag of reversing shift key\n");
+	printfConfig(fp, "--reverse-shift %s\n",
+		quoteString(getFlagString(OPTION_IDX_REVERSE_SHIFT)).c_str());
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# captions of key\n");
+	for (int i = 0; i < CAPTION_MAX; i++) {
+		char c = (char)('a' + i);
+		printfConfig(fp, "caption-%c=%s\n",
+			c, quoteString(getCaption(c)).c_str());
+	}
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "caption-space=%s\n",
+		quoteString(getCaption(' ')).c_str());
+	printfConfig(fp, "caption-enter=%s\n",
+		quoteString(getCaption('\n')).c_str());
+	printfConfig(fp, "\n");
+}
+
+////////////////////////////////////////////////////////////////
+// 設定ファイルをオープン
+// const char *path : 設定ファイルのパス
+// const char *mode : オープン・モード
+// return : ファイル・ポインタ
+////////////////////////////////////////////////////////////////
+
+FILE *Option::openConfig(const char *path, const char *mode)
+{
+	FILE *fp = fopen(path, mode);
+
+	if (fp == NULL)
+		perror("ERROR");
+
+	return fp;
+}
+
+////////////////////////////////////////////////////////////////
+// 設定ファイルをクローズ
+// FILE *fp : 設定ファイルのファイル・ポインタ
+// return : エラーならEOF
+////////////////////////////////////////////////////////////////
+
+int Option::closeConfig(FILE *fp)
+{
+	int res = fclose(fp);
+
+	if (res == EOF)
+		perror("ERROR");
+
+	return res;
+}
+
+////////////////////////////////////////////////////////////////
+// フォーマット文字列をセーブ
+// FILE *fp : ファイル
+// const char *fmt : フォーマット文字列
+// ... : 引数
+// return : エラーならEOF
+////////////////////////////////////////////////////////////////
+
+int Option::printfConfig(FILE *fp, const char *fmt, ...)
+{
+	va_list argptr;
+
+	va_start(argptr, fmt);
+	int res = vfprintf(fp, fmt, argptr);
+	va_end(argptr);
+
+	if (res == EOF)
+		perror("ERROR");
+
+	return res;
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定のパスを取得
+////////////////////////////////////////////////////////////////
+
+std::string Option::getCommonConfigPath()
+{
+	std::string path = "";
+	path = FileList::jointDir( FileList::getHomeDir(), STR_DIR_BASE );
+	path = FileList::jointDir( path, COMMON_CONFIG_FILE );
+	// fprintf(stderr, "[common option file path=%s]\n", path.c_str());
+
+	return path;
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定のパスを取得
+////////////////////////////////////////////////////////////////
+
+std::string Option::getGraphConfigPath()
+{
+	std::string dir = getStringGraphDir();
+
+	std::string path = "";
+	path = FileList::jointDir( FileList::getHomeDir(),
+		STR_DIR_BASE_GRAPH );
+	path = FileList::jointDir( path, dir );
+	path = FileList::jointDir( path, GRAPH_CONFIG_FILE );
+	// fprintf(stderr, "[graph option file path=%s]\n", path.c_str());
+
+	return path;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -164,7 +446,7 @@ void Option::init()
 // char **argv : 引数のリスト
 ////////////////////////////////////////////////////////////////
 
-void Option::checkOption(int argc, char **argv)
+void Option::parseOption(int argc, char **argv)
 {
 #if	!defined(HAVE_GETOPT) && !defined(HAVE_GETOPT_LONG)
 	long	n = 0;
@@ -206,46 +488,46 @@ void Option::checkOption(int argc, char **argv)
 			setFlag(OPTION_IDX_INIT, true);
 			break;
 		case 's':
-			setFlag(OPTION_IDX_SAVE, checkFlag(optarg));
+			setFlag(OPTION_IDX_SAVE, parseFlag(optarg));
 			break;
 		case 'n':
-			setNum(OPTION_IDX_STAR_NUMBER, checkNum(optarg));
+			setNum(OPTION_IDX_STAR_NUMBER, parseNum(optarg));
 			break;
 		case 'f':
-			setFlag(OPTION_IDX_FULL_SCREEN, checkFlag(optarg));
+			setFlag(OPTION_IDX_FULL_SCREEN, parseFlag(optarg));
 			break;
 		case 'F':
-			setNum(OPTION_IDX_FPS, checkNum(optarg));
+			setNum(OPTION_IDX_FPS, parseNum(optarg));
 			break;
 		case 'b':
 			setFile(OPTION_IDX_BG_FILE, optarg);
 			break;
 		case 'A':
-			setNum(OPTION_IDX_INTERVAL_AUTO, checkNum(optarg));
+			setNum(OPTION_IDX_INTERVAL_AUTO, parseNum(optarg));
 			break;
 		case 'a':
-			setKey(OPTION_IDX_AUTO_KEY, checkChar(optarg));
+			setKey(OPTION_IDX_AUTO_KEY, parseChar(optarg));
 			break;
 		case 'x':
-			setNum(OPTION_IDX_X_SPEED, checkNum(optarg));
+			setNum(OPTION_IDX_X_SPEED, parseNum(optarg));
 			break;
 		case 'y':
-			setNum(OPTION_IDX_Y_SPEED, checkNum(optarg));
+			setNum(OPTION_IDX_Y_SPEED, parseNum(optarg));
 			break;
 		case 'z':
-			setNum(OPTION_IDX_Z_SPEED, checkNum(optarg));
+			setNum(OPTION_IDX_Z_SPEED, parseNum(optarg));
 			break;
 		case 'X':
-			setFlag(OPTION_IDX_REVERSE_X, checkFlag(optarg));
+			setFlag(OPTION_IDX_REVERSE_X, parseFlag(optarg));
 			break;
 		case 'Y':
-			setFlag(OPTION_IDX_REVERSE_Y, checkFlag(optarg));
+			setFlag(OPTION_IDX_REVERSE_Y, parseFlag(optarg));
 			break;
 		case 'Z':
-			setFlag(OPTION_IDX_REVERSE_Z, checkFlag(optarg));
+			setFlag(OPTION_IDX_REVERSE_Z, parseFlag(optarg));
 			break;
 		case 'R':
-			setFlag(OPTION_IDX_REVERSE_SHIFT, checkFlag(optarg));
+			setFlag(OPTION_IDX_REVERSE_SHIFT, parseFlag(optarg));
 			break;
 		case 'V':
 		case 'v':
@@ -267,7 +549,7 @@ void Option::checkOption(int argc, char **argv)
 		}
 	}
 
-	checkArg(argc, argv, optind);
+	parseArg(argc, argv, optind);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -277,7 +559,7 @@ void Option::checkOption(int argc, char **argv)
 // int optind : 引数のインデックス
 ////////////////////////////////////////////////////////////////
 
-void Option::checkArg(int argc, char **argv, int optind)
+void Option::parseArg(int argc, char **argv, int optind)
 {
 	for (; optind < argc; optind++) {
 		char *p = strchr(argv[optind], '=');
@@ -293,7 +575,7 @@ void Option::checkArg(int argc, char **argv, int optind)
 			std::string value = argv[optind];
 			value.erase(0, len + 1);
 
-			checkKeyValue(key, value);
+			parseKeyValue(key, value);
 		}
 	}
 
@@ -319,7 +601,7 @@ void Option::checkArg(int argc, char **argv, int optind)
 // const std::string &value : 値引数
 ////////////////////////////////////////////////////////////////
 
-void Option::checkKeyValue(
+void Option::parseKeyValue(
 	const std::string &key, const std::string &value)
 {
 	long len = key.length();
@@ -373,7 +655,7 @@ void Option::checkKeyValue(
 // return : フラグ
 ////////////////////////////////////////////////////////////////
 
-bool Option::checkFlag(const char *optarg)
+bool Option::parseFlag(const char *optarg)
 {
 	std::string str = "";
 
@@ -423,7 +705,7 @@ bool Option::checkFlag(const char *optarg)
 // return : 数値
 ////////////////////////////////////////////////////////////////
 
-double Option::checkNum(const char *optarg)
+double Option::parseNum(const char *optarg)
 {
 	double num = 0.0;
 
@@ -459,7 +741,7 @@ double Option::checkNum(const char *optarg)
 // return : 文字
 ////////////////////////////////////////////////////////////////
 
-char Option::checkChar(const char *optarg)
+char Option::parseChar(const char *optarg)
 {
 	const char errChar = 'a';
 
@@ -577,6 +859,27 @@ void Option::setFile(OptionIdx idx, const std::string &file)
 }
 
 ////////////////////////////////////////////////////////////////
+// フラグの配列の値を文字列に変換して取得
+// OptionIdx idx : 配列のインデックス
+// return : フラグ
+////////////////////////////////////////////////////////////////
+
+std::string Option::getFlagString(OptionIdx idx)
+{
+	if (idx < 0)
+		return "false";
+	if (idx >= OPTION_IDX_MAX)
+		return "false";
+
+	if (this->flag[idx])
+		return "true";
+	else
+		return "false";
+
+	return "false";
+}
+
+////////////////////////////////////////////////////////////////
 // フラグの配列の値を取得
 // OptionIdx idx : 配列のインデックス
 // return : フラグ
@@ -609,6 +912,22 @@ double Option::getNum(OptionIdx idx)
 }
 
 ////////////////////////////////////////////////////////////////
+// キーの配列の値を文字列に変換して取得
+// OptionIdx idx : 配列のインデックス
+// return : キー
+////////////////////////////////////////////////////////////////
+
+std::string Option::getKeyString(OptionIdx idx)
+{
+	if (idx < 0)
+		return " ";
+	if (idx >= OPTION_IDX_MAX)
+		return " ";
+
+	return convertKeyToString(this->key[idx]);
+}
+
+////////////////////////////////////////////////////////////////
 // キーの配列の値を取得
 // OptionIdx idx : 配列のインデックス
 // return : キー
@@ -630,14 +949,12 @@ int Option::getKey(OptionIdx idx)
 // return : ファイル名
 ////////////////////////////////////////////////////////////////
 
-const std::string &Option::getFile(OptionIdx idx)
+std::string Option::getFile(OptionIdx idx)
 {
-	static const std::string strErr = "";
-
 	if (idx < 0)
-		return strErr;
+		return "";
 	if (idx >= OPTION_IDX_MAX)
-		return strErr;
+		return "";
 
 	return this->file[idx];
 }
@@ -666,14 +983,96 @@ std::string Option::getCaption(char key)
 	return caption[n];
 }
 
+////////////////////////////////////////////////////////////////
+// グラフィック・ディレクトリのパスを返す
+// return : パス
+////////////////////////////////////////////////////////////////
+
 std::string Option::getStringGraphDir()
 {
 	return stringGraphDir;
 }
 
+////////////////////////////////////////////////////////////////
+// BGM・ディレクトリのパスを返す
+// return : パス
+////////////////////////////////////////////////////////////////
+
 std::string Option::getStringMusicDir()
 {
 	return stringMusicDir;
+}
+
+////////////////////////////////////////////////////////////////
+// キーを文字列に変換
+// int key : キー
+// return : 変換後の文字列
+////////////////////////////////////////////////////////////////
+
+std::string Option::convertKeyToString(int key)
+{
+	char buf[31 + 1] = " ";
+	sprintf(buf, "%c", key);
+
+	return buf;
+}
+
+////////////////////////////////////////////////////////////////
+// 文字列をクォーティング
+// std::string str : 文字列
+// return : クォーティング後の文字列
+////////////////////////////////////////////////////////////////
+
+std::string Option::quoteString(std::string str)
+{
+	std::string s = "";
+	s = "\"";
+	s += escapeString(str, false);
+	s += "\"";
+
+	return s;
+}
+
+////////////////////////////////////////////////////////////////
+// 文字列内の特殊文字をエスケープ
+// std::string str : 文字列
+// return : エスケープ後の文字列
+////////////////////////////////////////////////////////////////
+
+std::string Option::escapeString(std::string str, bool flagEscapeSpace)
+{
+	std::string s = "";
+	for (string::iterator it = str.begin(); it != str.end(); ++it) {
+		int c = *it;
+		switch (c) {
+		case '\\':
+			s += '\\';
+			s += '\\';
+			break;
+		case '\"':
+			s += '\\';
+			s += '\"';
+			break;
+		case '\'':
+			s += '\\';
+			s += '\'';
+			break;
+		case ' ':
+			if (flagEscapeSpace)
+				s += '\\';
+			s += ' ';
+			break;
+		case '\n':
+			s += '\\';
+			s += 'n';
+			break;
+		default:
+			s += c;
+			break;
+		}
+	}
+
+	return s;
 }
 
 ////////////////////////////////////////////////////////////////

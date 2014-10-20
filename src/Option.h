@@ -94,39 +94,68 @@ public:
 	~Option();
 	void init();
 
-	void checkOption(int argc, char **argv);
-	// void checkArg(int argc, char **argv, int optind);
-	// void checkKeyValue(
+	void saveAllConfig();
+	// void saveConfigVersion(FILE *fp);
+	// void saveCommonConfig();
+	// void saveCommonConfigContents(FILE *fp);
+	// void saveGraphConfig();
+	// void saveGraphConfigContents(FILE *fp);
+	// FILE *openConfig(const char *path, const char *mode);
+	// int closeConfig(const FILE *fp);
+	// int printfConfig(FILE *fp, const char *fmt, ...);
+	// std::string getCommonConfigPath();
+	// std::string getGraphConfigPath();
+
+	void parseOption(int argc, char **argv);
+	// void parseArg(int argc, char **argv, int optind);
+	// void parseKeyValue(
 		// const std::string &key, const std::string &value);
 
-	// bool checkFlag(const char *optarg);
-	// double checkNum(const char *optarg);
-	// char checkChar(const char *optarg);
+	// bool parseFlag(const char *optarg);
+	// double parseNum(const char *optarg);
+	// char parseChar(const char *optarg);
 
 	void setFlag(OptionIdx idx, bool flag);
 	void setNum(OptionIdx idx, double num);
 	void setKey(OptionIdx idx, int key);
 	void setFile(OptionIdx idx, const std::string &file);
 
+	std::string getFlagString(OptionIdx idx);
 	bool getFlag(OptionIdx idx);
 	double getNum(OptionIdx idx);
+	std::string getKeyString(OptionIdx idx);
 	int getKey(OptionIdx idx);
-	const std::string &getFile(OptionIdx idx);
+	std::string getFile(OptionIdx idx);
 
 	std::string getCaption(char key);
 	std::string getStringGraphDir();
 	std::string getStringMusicDir();
 
+	std::string convertKeyToString(int key);
+	std::string quoteString(std::string str);
+	std::string escapeString(std::string str, bool flagEscapeSpace);
+
 	void usage(FILE *fp);
 	void version(FILE *fp);
 
 private:
-	void checkArg(int argc, char **argv, int optind);
-	void checkKeyValue(const std::string &key, const std::string &value);
+	void saveConfigVersion(FILE *fp);
+	void saveCommonConfig();
+	void saveCommonConfigContents(FILE *fp);
+	void saveGraphConfig();
+	void saveGraphConfigContents(FILE *fp);
+	FILE *openConfig(const char *path, const char *mode);
+	int closeConfig(FILE *fp);
+	int printfConfig(FILE *fp, const char *fmt, ...);
+	std::string getCommonConfigPath();
+	std::string getGraphConfigPath();
 
-	bool checkFlag(const char *optarg);
-	double checkNum(const char *optarg);
-	char checkChar(const char *optarg);
+	void parseArg(int argc, char **argv, int optind);
+	void parseKeyValue(const std::string &key, const std::string &value);
+
+	bool parseFlag(const char *optarg);
+	double parseNum(const char *optarg);
+	char parseChar(const char *optarg);
 
 };
 

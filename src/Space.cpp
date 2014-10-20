@@ -271,7 +271,7 @@ bool Space::bearFgStar(char starType)
 		return false;
 
 	bool flagPushFront = true;
-	bool flagSort = true;
+	// bool flagSort = true;
 	double x = 0.0;
 	double y = 0.0;
 	double z = 0.0;
@@ -293,7 +293,7 @@ bool Space::bearFgStar(char starType)
 			flagPushFront = false;
 		}
 
-		flagSort = false;
+		// flagSort = false;
 	} else if (absVX > absVY) {
 		y = resetStarY(1.0);
 		z = resetStarZ(1.0);
