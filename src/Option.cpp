@@ -340,10 +340,6 @@ void Option::saveGraphConfigContents(FILE *fp)
 
 	printfConfig(fp, "# captions of key\n");
 	for (int i = 0; i < CAPTION_MAX; i++) {
-		char str[128 + 1];
-		sprintf(str, "%c:\n%s", (char)('A' + i), "Star");
-		caption[i] = str;
-
 		char c = (char)('a' + i);
 		printfConfig(fp, "caption-%c=%s\n",
 			c, quoteString(getCaption(c)).c_str());
