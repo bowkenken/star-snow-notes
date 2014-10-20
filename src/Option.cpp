@@ -853,17 +853,16 @@ void Option::setFile(OptionIdx idx, const std::string &file)
 std::string Option::getFlagString(OptionIdx idx)
 {
 	if (idx < 0)
-		return false;
+		return "false";
 	if (idx >= OPTION_IDX_MAX)
-		return false;
+		return "false";
 
-	std::string str;
 	if (this->flag[idx])
-		str = "true";
+		return "true";
 	else
-		str = "false";
+		return "false";
 
-	return str;
+	return "false";
 }
 
 ////////////////////////////////////////////////////////////////
