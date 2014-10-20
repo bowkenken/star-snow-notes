@@ -167,8 +167,8 @@ void Option::init()
 		sprintf(str, "%c:\n%s", (char)('A' + i), "Star");
 		caption[i] = str;
 	}
-	captionSpace = "Space:\n" "random";
-	captionEnter = "Enter:\n" "repeat";
+	captionSpace = "Space:\n" "Random";
+	captionEnter = "Enter:\n" "Repeat";
 
 	argArray.clear();
 	stringGraphDir = DEFAULT_GRAPH_DIR;
