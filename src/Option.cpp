@@ -432,7 +432,7 @@ std::string Option::getGraphConfigPath()
 // char **argv : 引数のリスト
 ////////////////////////////////////////////////////////////////
 
-void Option::checkOption(int argc, char **argv)
+void Option::parseOption(int argc, char **argv)
 {
 #if	!defined(HAVE_GETOPT) && !defined(HAVE_GETOPT_LONG)
 	long	n = 0;
@@ -474,46 +474,46 @@ void Option::checkOption(int argc, char **argv)
 			setFlag(OPTION_IDX_INIT, true);
 			break;
 		case 's':
-			setFlag(OPTION_IDX_SAVE, checkFlag(optarg));
+			setFlag(OPTION_IDX_SAVE, parseFlag(optarg));
 			break;
 		case 'n':
-			setNum(OPTION_IDX_STAR_NUMBER, checkNum(optarg));
+			setNum(OPTION_IDX_STAR_NUMBER, parseNum(optarg));
 			break;
 		case 'f':
-			setFlag(OPTION_IDX_FULL_SCREEN, checkFlag(optarg));
+			setFlag(OPTION_IDX_FULL_SCREEN, parseFlag(optarg));
 			break;
 		case 'F':
-			setNum(OPTION_IDX_FPS, checkNum(optarg));
+			setNum(OPTION_IDX_FPS, parseNum(optarg));
 			break;
 		case 'b':
 			setFile(OPTION_IDX_BG_FILE, optarg);
 			break;
 		case 'A':
-			setNum(OPTION_IDX_INTERVAL_AUTO, checkNum(optarg));
+			setNum(OPTION_IDX_INTERVAL_AUTO, parseNum(optarg));
 			break;
 		case 'a':
-			setKey(OPTION_IDX_AUTO_KEY, checkChar(optarg));
+			setKey(OPTION_IDX_AUTO_KEY, parseChar(optarg));
 			break;
 		case 'x':
-			setNum(OPTION_IDX_X_SPEED, checkNum(optarg));
+			setNum(OPTION_IDX_X_SPEED, parseNum(optarg));
 			break;
 		case 'y':
-			setNum(OPTION_IDX_Y_SPEED, checkNum(optarg));
+			setNum(OPTION_IDX_Y_SPEED, parseNum(optarg));
 			break;
 		case 'z':
-			setNum(OPTION_IDX_Z_SPEED, checkNum(optarg));
+			setNum(OPTION_IDX_Z_SPEED, parseNum(optarg));
 			break;
 		case 'X':
-			setFlag(OPTION_IDX_REVERSE_X, checkFlag(optarg));
+			setFlag(OPTION_IDX_REVERSE_X, parseFlag(optarg));
 			break;
 		case 'Y':
-			setFlag(OPTION_IDX_REVERSE_Y, checkFlag(optarg));
+			setFlag(OPTION_IDX_REVERSE_Y, parseFlag(optarg));
 			break;
 		case 'Z':
-			setFlag(OPTION_IDX_REVERSE_Z, checkFlag(optarg));
+			setFlag(OPTION_IDX_REVERSE_Z, parseFlag(optarg));
 			break;
 		case 'R':
-			setFlag(OPTION_IDX_REVERSE_SHIFT, checkFlag(optarg));
+			setFlag(OPTION_IDX_REVERSE_SHIFT, parseFlag(optarg));
 			break;
 		case 'V':
 		case 'v':
@@ -535,7 +535,7 @@ void Option::checkOption(int argc, char **argv)
 		}
 	}
 
-	checkArg(argc, argv, optind);
+	parseArg(argc, argv, optind);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -545,7 +545,7 @@ void Option::checkOption(int argc, char **argv)
 // int optind : 引数のインデックス
 ////////////////////////////////////////////////////////////////
 
-void Option::checkArg(int argc, char **argv, int optind)
+void Option::parseArg(int argc, char **argv, int optind)
 {
 	for (; optind < argc; optind++) {
 		char *p = strchr(argv[optind], '=');
@@ -561,7 +561,7 @@ void Option::checkArg(int argc, char **argv, int optind)
 			std::string value = argv[optind];
 			value.erase(0, len + 1);
 
-			checkKeyValue(key, value);
+			parseKeyValue(key, value);
 		}
 	}
 
@@ -587,7 +587,7 @@ void Option::checkArg(int argc, char **argv, int optind)
 // const std::string &value : 値引数
 ////////////////////////////////////////////////////////////////
 
-void Option::checkKeyValue(
+void Option::parseKeyValue(
 	const std::string &key, const std::string &value)
 {
 	long len = key.length();
@@ -641,7 +641,7 @@ void Option::checkKeyValue(
 // return : フラグ
 ////////////////////////////////////////////////////////////////
 
-bool Option::checkFlag(const char *optarg)
+bool Option::parseFlag(const char *optarg)
 {
 	std::string str = "";
 
@@ -691,7 +691,7 @@ bool Option::checkFlag(const char *optarg)
 // return : 数値
 ////////////////////////////////////////////////////////////////
 
-double Option::checkNum(const char *optarg)
+double Option::parseNum(const char *optarg)
 {
 	double num = 0.0;
 
@@ -727,7 +727,7 @@ double Option::checkNum(const char *optarg)
 // return : 文字
 ////////////////////////////////////////////////////////////////
 
-char Option::checkChar(const char *optarg)
+char Option::parseChar(const char *optarg)
 {
 	const char errChar = 'a';
 

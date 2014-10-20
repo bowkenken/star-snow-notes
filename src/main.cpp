@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 
 	gOption = new Option;
 	gOption->init();
-	gOption->checkOption(argc, argv);
+	gOption->parseOption(argc, argv);
 
 	gSetting = new Option;
 	gSetting->init();

@@ -106,14 +106,14 @@ public:
 	// std::string getCommonConfigPath();
 	// std::string getGraphConfigPath();
 
-	void checkOption(int argc, char **argv);
-	// void checkArg(int argc, char **argv, int optind);
-	// void checkKeyValue(
+	void parseOption(int argc, char **argv);
+	// void parseArg(int argc, char **argv, int optind);
+	// void parseKeyValue(
 		// const std::string &key, const std::string &value);
 
-	// bool checkFlag(const char *optarg);
-	// double checkNum(const char *optarg);
-	// char checkChar(const char *optarg);
+	// bool parseFlag(const char *optarg);
+	// double parseNum(const char *optarg);
+	// char parseChar(const char *optarg);
 
 	void setFlag(OptionIdx idx, bool flag);
 	void setNum(OptionIdx idx, double num);
@@ -149,12 +149,12 @@ private:
 	std::string getCommonConfigPath();
 	std::string getGraphConfigPath();
 
-	void checkArg(int argc, char **argv, int optind);
-	void checkKeyValue(const std::string &key, const std::string &value);
+	void parseArg(int argc, char **argv, int optind);
+	void parseKeyValue(const std::string &key, const std::string &value);
 
-	bool checkFlag(const char *optarg);
-	double checkNum(const char *optarg);
-	char checkChar(const char *optarg);
+	bool parseFlag(const char *optarg);
+	double parseNum(const char *optarg);
+	char parseChar(const char *optarg);
 
 };
 
