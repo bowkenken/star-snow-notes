@@ -96,7 +96,8 @@ int main(int argc, char **argv)
 	gSetting->init();
 	*gSetting = *gOption;
 
-	gSetting->saveAllConfig();//@@@
+	if (gSetting->getFlag(OPTION_IDX_SAVE))
+		gSetting->saveAllConfig();//@@@
 
 	::initScreen(&argc, argv);
 
