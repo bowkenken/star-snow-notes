@@ -176,22 +176,95 @@ void Option::init()
 }
 
 ////////////////////////////////////////////////////////////////
-// 全ての設定をマージ
-// Option opt : マージ元の設定
+// 全ての設定を読み込み
+// Option *opt : 共通設定の参照元
 ////////////////////////////////////////////////////////////////
 
-void Option::mergeAllConfig(Option opt)
+void Option::loadAllConfig(Option *opt)
 {
-	*this = opt;
+	loadCommonConfig();
+	mergeCommonConfig(opt);
+
+	loadGraphConfig();
+	mergeGraphConfig(opt);
 }
 
 ////////////////////////////////////////////////////////////////
-// 全ての設定を読み込み
-// Option opt : 共通設定の参照元
+// 共通設定の読み込み
 ////////////////////////////////////////////////////////////////
 
-void Option::loadAllConfig(Option opt)
+void Option::loadCommonConfig()
 {
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定の読み込み
+////////////////////////////////////////////////////////////////
+
+void Option::loadGraphConfig()
+{
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定をマージ
+// Option *opt : マージ元の設定
+////////////////////////////////////////////////////////////////
+
+void Option::mergeCommonConfig(Option *opt)
+{
+	if (opt == NULL)
+		return;
+
+	stringGraphDir = opt->stringGraphDir;
+	stringMusicDir = opt->stringMusicDir;
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定をマージ
+// Option *opt : マージ元の設定
+////////////////////////////////////////////////////////////////
+
+void Option::mergeGraphConfig(Option *opt)
+{
+	if (opt == NULL)
+		return;
+
+	setFlag(OPTION_IDX_INIT,
+		opt->getFlag(OPTION_IDX_INIT));
+	setFlag(OPTION_IDX_SAVE,
+		opt->getFlag(OPTION_IDX_SAVE));
+	setNum(OPTION_IDX_STAR_NUMBER,
+		opt->getNum(OPTION_IDX_STAR_NUMBER));
+	setFlag(OPTION_IDX_FULL_SCREEN,
+		opt->getFlag(OPTION_IDX_FULL_SCREEN));
+	setNum(OPTION_IDX_FPS,
+		opt->getNum(OPTION_IDX_FPS));
+	setFile(OPTION_IDX_BG_FILE,
+		opt->getFile(OPTION_IDX_BG_FILE));
+	setNum(OPTION_IDX_INTERVAL_AUTO,
+		opt->getNum(OPTION_IDX_INTERVAL_AUTO));
+	setKey(OPTION_IDX_AUTO_KEY,
+		opt->getKey(OPTION_IDX_AUTO_KEY));
+	setNum(OPTION_IDX_X_SPEED,
+		opt->getNum(OPTION_IDX_X_SPEED));
+	setNum(OPTION_IDX_Y_SPEED,
+		opt->getNum(OPTION_IDX_Y_SPEED));
+	setNum(OPTION_IDX_Z_SPEED,
+		opt->getNum(OPTION_IDX_Z_SPEED));
+	setFlag(OPTION_IDX_REVERSE_X,
+		opt->getFlag(OPTION_IDX_REVERSE_X));
+	setFlag(OPTION_IDX_REVERSE_Y,
+		opt->getFlag(OPTION_IDX_REVERSE_Y));
+	setFlag(OPTION_IDX_REVERSE_Z,
+		opt->getFlag(OPTION_IDX_REVERSE_Z));
+	setFlag(OPTION_IDX_REVERSE_SHIFT,
+		opt->getFlag(OPTION_IDX_REVERSE_SHIFT));
+
+	for (int i = 0; i < CAPTION_MAX; i++)
+		caption[i] = opt->caption[i];
+
+	captionSpace = opt->captionSpace;
+	captionEnter = opt->captionEnter;
 }
 
 ////////////////////////////////////////////////////////////////

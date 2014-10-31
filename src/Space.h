@@ -67,6 +67,9 @@ private:
 	// 星のテクスチャの最大数
 	static const long fgStarTextureMaxNum = 'z' - 'a' + 1;
 
+	// 設定
+	Option *setting;
+
 	// 描画するか?
 	bool flagDraw;
 	// 停止中か?
@@ -104,8 +107,8 @@ private:
 public:
 	Space();
 	~Space();
-	void init(Option opt);
-	void initTexture(Option opt);
+	void init(Option *opt);
+	void initTexture();
 
 	bool bearFgStar(char starType);
 	bool bearBgStar();

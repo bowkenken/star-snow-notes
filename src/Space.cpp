@@ -91,8 +91,15 @@ Space::~Space()
 // 宇宙の初期化
 ////////////////////////////////////////////////////////////////
 
-void Space::init(Option opt)
+void Space::init(Option *opt)
 {
+	if (opt == NULL) {
+		opt = new Option;
+		opt->init();
+	}
+
+	setting = opt;
+
 	srand(time(NULL));
 
 	flagDraw = false;
@@ -100,12 +107,13 @@ void Space::init(Option opt)
 
 	flagMoveCamera = false;
 
-	autoBearFrame = opt.getNum(StarSnowNotes::OPTION_IDX_INTERVAL_AUTO);
+	autoBearFrame = setting->getNum(
+		StarSnowNotes::OPTION_IDX_INTERVAL_AUTO);
 	if (autoBearFrame < 1)
 		autoBearFrame = 1;
 
 	flagAutoBear = false;
-	prevStarType = opt.getKey(OPTION_IDX_AUTO_KEY);
+	prevStarType = setting->getKey(OPTION_IDX_AUTO_KEY);
 	if (prevStarType == '\0')
 		prevStarType = ' ';
 	else
@@ -123,16 +131,16 @@ void Space::init(Option opt)
 	bx = false;
 	by = false;
 	bz = false;
-	vx = opt.getNum(OPTION_IDX_X_SPEED);
-	vy = opt.getNum(OPTION_IDX_Y_SPEED);
-	vz = opt.getNum(OPTION_IDX_Z_SPEED);
+	vx = setting->getNum(OPTION_IDX_X_SPEED);
+	vy = setting->getNum(OPTION_IDX_Y_SPEED);
+	vz = setting->getNum(OPTION_IDX_Z_SPEED);
 
 	killAllStar(&fgStarArray);
 	killAllStar(&bgStarArray);
 
-	initTexture(opt);
+	initTexture();
 
-	long bgStarMaxNum = opt.getNum(OPTION_IDX_STAR_NUMBER);
+	long bgStarMaxNum = setting->getNum(OPTION_IDX_STAR_NUMBER);
 	for (long i = 0; i < bgStarMaxNum; ++i)
 		bearBgStar();
 
@@ -150,9 +158,12 @@ void Space::init(Option opt)
 // テクスチャの初期化
 ////////////////////////////////////////////////////////////////
 
-void Space::initTexture(Option opt)
+void Space::initTexture()
 {
-	std::string dir = opt.getStringGraphDir();
+	if (setting == NULL)
+		return;
+
+	std::string dir = setting->getStringGraphDir();
 	if (dir == "")
 		dir = "default/";
 	// fprintf(stderr, "[texture=%s]\n", dir.c_str());
@@ -163,7 +174,7 @@ void Space::initTexture(Option opt)
 	// 宇宙の背景
 
 	path = "";
-	std::string file = opt.getFile(OPTION_IDX_BG_FILE);
+	std::string file = setting->getFile(OPTION_IDX_BG_FILE);
 	if (file != "") {
 		path = FileList::jointDir(fls.getBaseDir(), STR_DIR_SPACE_BG);
 		path = FileList::jointDir(path, file);
