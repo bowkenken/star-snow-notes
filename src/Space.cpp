@@ -163,7 +163,7 @@ void Space::initTexture()
 	if (setting == NULL)
 		return;
 
-	std::string dir = setting->getStringGraphDir();
+	std::string dir = setting->getGraphDir();
 	if (dir == "")
 		dir = "default/";
 	// fprintf(stderr, "[texture=%s]\n", dir.c_str());

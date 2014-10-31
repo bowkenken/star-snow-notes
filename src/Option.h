@@ -86,8 +86,8 @@ private:
 	std::string captionEnter;
 
 	std::vector<std::string> argArray;
-	std::string stringGraphDir;
-	std::string stringMusicDir;
+	std::string graphDir;
+	std::string musicDir;
 
 public:
 	Option();
@@ -104,6 +104,10 @@ public:
 	void setKey(OptionIdx idx, int key);
 	void setFile(OptionIdx idx, const std::string &file);
 
+	void setCaption(char key, const std::string &str);
+	void setGraphDir(const std::string &dir);
+	void setMusicDir(const std::string &dir);
+
 	std::string getFlagString(OptionIdx idx);
 	bool getFlag(OptionIdx idx);
 	double getNum(OptionIdx idx);
@@ -112,8 +116,8 @@ public:
 	std::string getFile(OptionIdx idx);
 
 	std::string getCaption(char key);
-	std::string getStringGraphDir();
-	std::string getStringMusicDir();
+	std::string getGraphDir();
+	std::string getMusicDir();
 
 	std::string convertKeyToString(int key);
 	std::string quoteString(std::string str);

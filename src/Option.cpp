@@ -162,17 +162,18 @@ void Option::init()
 	setFlag(OPTION_IDX_REVERSE_Z, false);
 	setFlag(OPTION_IDX_REVERSE_SHIFT, false);
 
-	for (int i = 0; i < CAPTION_MAX; i++) {
+	for (char c = 'a'; c <= 'z'; c++) {
 		char str[128 + 1];
-		sprintf(str, "%c:\n%s", (char)('A' + i), "Star");
-		caption[i] = str;
+		sprintf(str, "%c:\n%s", c, "Star");
+		setCaption(c, str);
 	}
-	captionSpace = "Space:\n" "Random";
-	captionEnter = "Enter:\n" "Repeat";
+	setCaption(' ', "Space:\n" "Random");
+	setCaption('\n', "Enter:\n" "Repeat");
+
+	setGraphDir(DEFAULT_GRAPH_DIR);
+	setMusicDir(DEFAULT_MUSIC_DIR);
 
 	argArray.clear();
-	stringGraphDir = DEFAULT_GRAPH_DIR;
-	stringMusicDir = DEFAULT_MUSIC_DIR;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -215,8 +216,8 @@ void Option::mergeCommonConfig(Option *opt)
 	if (opt == NULL)
 		return;
 
-	stringGraphDir = opt->stringGraphDir;
-	stringMusicDir = opt->stringMusicDir;
+	setGraphDir(opt->getGraphDir());
+	setMusicDir(opt->getMusicDir());
 }
 
 ////////////////////////////////////////////////////////////////
@@ -260,11 +261,14 @@ void Option::mergeGraphConfig(Option *opt)
 	setFlag(OPTION_IDX_REVERSE_SHIFT,
 		opt->getFlag(OPTION_IDX_REVERSE_SHIFT));
 
-	for (int i = 0; i < CAPTION_MAX; i++)
-		caption[i] = opt->caption[i];
+	char c;
+	for (c = 'a'; c <= 'z'; c++)
+		setCaption(c, opt->getCaption(c));
 
-	captionSpace = opt->captionSpace;
-	captionEnter = opt->captionEnter;
+	c = ' ';
+	setCaption(c, opt->getCaption(c));
+	c = '\n';
+	setCaption(c, opt->getCaption(c));
 }
 
 ////////////////////////////////////////////////////////////////
@@ -328,11 +332,11 @@ void Option::saveCommonConfigContents(FILE *fp)
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Graphic Directly\n");
-	printfConfig(fp, "%s\n", quoteString(getStringGraphDir()).c_str());
+	printfConfig(fp, "%s\n", quoteString(getGraphDir()).c_str());
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Music Directly\n");
-	printfConfig(fp, "%s\n", quoteString(getStringMusicDir()).c_str());
+	printfConfig(fp, "%s\n", quoteString(getMusicDir()).c_str());
 	printfConfig(fp, "\n");
 }
 
@@ -523,7 +527,7 @@ std::string Option::getCommonConfigPath()
 
 std::string Option::getGraphConfigPath()
 {
-	std::string dir = getStringGraphDir();
+	std::string dir = getGraphDir();
 
 	std::string path = "";
 	path = FileList::jointDir( FileList::getHomeDir(),
@@ -682,12 +686,12 @@ void Option::parseArg(int argc, char **argv, int optind)
 	}
 
 	if (size > ARG_ARRAY_IDX_GRAPH)
-		stringGraphDir = argArray[ARG_ARRAY_IDX_GRAPH];
+		setGraphDir(argArray[ARG_ARRAY_IDX_GRAPH]);
 	if (size > ARG_ARRAY_IDX_MUSIC)
-		stringMusicDir = argArray[ARG_ARRAY_IDX_MUSIC];
+		setMusicDir(argArray[ARG_ARRAY_IDX_MUSIC]);
 
-	// fprintf(stderr, "[graph=%s]\n", stringGraphDir.c_str());
-	// fprintf(stderr, "[music=%s]\n", stringMusicDir.c_str());
+	// fprintf(stderr, "[graph=%s]\n", getGraphDir().c_str());
+	// fprintf(stderr, "[music=%s]\n", getMusicDir().c_str());
 }
 
 ////////////////////////////////////////////////////////////////
@@ -705,38 +709,37 @@ void Option::parseKeyValue(
 		str.erase(len - 1);
 
 		char c = key[len - 1];
-		int idx = tolower(c) - 'a';
 
 		if (str == "caption-") {
-			if (idx < 0)
+			if (c < 'a')
 				return;
-			if (idx >= CAPTION_MAX)
+			if (c > 'z')
 				return;
 
 			// fprintf(stderr, "[caption-%c=%s]\n",
 			//	c, value.c_str());
-			caption[idx] = value;
+			setCaption(c, value);
 			return;
 		}
 	}
 
 	if (key == "caption-space") {
-		captionSpace = value;
+		setCaption(' ', value);
 		return;
 	}
 	if (key == "caption-enter") {
-		captionEnter = value;
+		setCaption('\n', value);
 		return;
 	}
 
 	if ((key == "graph") || (key == "graphic")) {
 		// fprintf(stderr, "[graph=%s]\n", value.c_str());
-		stringGraphDir = value;
+		setGraphDir(value);
 		return;
 	}
 	if (key == "music") {
 		// fprintf(stderr, "[music=%s]\n", value.c_str());
-		stringMusicDir = value;
+		setMusicDir(value);
 		return;
 	}
 
@@ -954,6 +957,52 @@ void Option::setFile(OptionIdx idx, const std::string &file)
 }
 
 ////////////////////////////////////////////////////////////////
+// キャプションの値を設定
+// char key : キャプションのキー
+// const std::string &str : キャプションの値
+////////////////////////////////////////////////////////////////
+
+void Option::setCaption(char key, const std::string &str)
+{
+	if (key == ' ') {
+		captionSpace = str;
+		return;
+	}
+	if ((key == '\n') || (key == '\r')) {
+		captionEnter = str;
+		return;
+	}
+
+	int n = tolower(key) - 'a';
+	if (n < 0)
+		return;
+	if (n >= CAPTION_MAX)
+		return;
+
+	caption[n] = str;
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック・ディレクトリを設定
+// const std::string &dir : ディレクトリ
+////////////////////////////////////////////////////////////////
+
+void Option::setGraphDir(const std::string &dir)
+{
+	graphDir = dir;
+}
+
+////////////////////////////////////////////////////////////////
+// BGM・ディレクトリを設定
+// const std::string &dir : ディレクトリ
+////////////////////////////////////////////////////////////////
+
+void Option::setMusicDir(const std::string &dir)
+{
+	musicDir = dir;
+}
+
+////////////////////////////////////////////////////////////////
 // フラグの配列の値を文字列に変換して取得
 // OptionIdx idx : 配列のインデックス
 // return : フラグ
@@ -1064,9 +1113,7 @@ std::string Option::getCaption(char key)
 {
 	if (key == ' ')
 		return captionSpace;
-	if (key == '\n')
-		return captionEnter;
-	if (key == '\r')
+	if ((key == '\n') || (key == '\r'))
 		return captionEnter;
 
 	int n = tolower(key) - 'a';
@@ -1083,9 +1130,9 @@ std::string Option::getCaption(char key)
 // return : パス
 ////////////////////////////////////////////////////////////////
 
-std::string Option::getStringGraphDir()
+std::string Option::getGraphDir()
 {
-	return stringGraphDir;
+	return graphDir;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1093,9 +1140,9 @@ std::string Option::getStringGraphDir()
 // return : パス
 ////////////////////////////////////////////////////////////////
 
-std::string Option::getStringMusicDir()
+std::string Option::getMusicDir()
 {
-	return stringMusicDir;
+	return musicDir;
 }
 
 ////////////////////////////////////////////////////////////////
