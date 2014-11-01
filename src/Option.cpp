@@ -146,6 +146,23 @@ void Option::init()
 		key[i] = ' ';
 		file[i] = "err";
 	}
+
+	OptionTypeArray[OPTION_IDX_INIT] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_SAVE] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_STAR_NUMBER] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_FULL_SCREEN] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_FPS] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_BG_FILE] = OPTION_TYPE_FILE;
+	OptionTypeArray[OPTION_IDX_INTERVAL_AUTO] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_AUTO_KEY] = OPTION_TYPE_KEY;
+	OptionTypeArray[OPTION_IDX_X_SPEED] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_Y_SPEED] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_Z_SPEED] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_REVERSE_X] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_REVERSE_Y] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_REVERSE_Z] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_REVERSE_SHIFT] = OPTION_TYPE_FLAG;
+
 	setFlag(OPTION_IDX_INIT, false);
 	setFlag(OPTION_IDX_SAVE, false);
 	setNum(OPTION_IDX_STAR_NUMBER, 10240);
@@ -172,6 +189,17 @@ void Option::init()
 
 	setGraphDir(DEFAULT_GRAPH_DIR);
 	setMusicDir(DEFAULT_MUSIC_DIR);
+
+	// 設定が変更されなかった事にする
+
+	for (int i = 0; i < OPTION_IDX_MAX; i++)
+		flagModifiedOption[i] = false;
+	for (int i = 0; i < CAPTION_MAX; i++)
+		flagModifiedCaption[i] = false;
+	flagModifiedCaptionSpace = false;
+	flagModifiedCaptionEnter = false;
+	flagModifiedGraphDir = false;
+	flagModifiedMusicDir = false;
 
 	argArray.clear();
 }
@@ -216,8 +244,10 @@ void Option::mergeCommonConfig(Option *opt)
 	if (opt == NULL)
 		return;
 
-	setGraphDir(opt->getGraphDir());
-	setMusicDir(opt->getMusicDir());
+	if (opt->flagModifiedGraphDir)
+		setGraphDir(opt->getGraphDir());
+	if (opt->flagModifiedMusicDir)
+		setMusicDir(opt->getMusicDir());
 }
 
 ////////////////////////////////////////////////////////////////
@@ -230,45 +260,65 @@ void Option::mergeGraphConfig(Option *opt)
 	if (opt == NULL)
 		return;
 
-	setFlag(OPTION_IDX_INIT,
-		opt->getFlag(OPTION_IDX_INIT));
-	setFlag(OPTION_IDX_SAVE,
-		opt->getFlag(OPTION_IDX_SAVE));
-	setNum(OPTION_IDX_STAR_NUMBER,
-		opt->getNum(OPTION_IDX_STAR_NUMBER));
-	setFlag(OPTION_IDX_FULL_SCREEN,
-		opt->getFlag(OPTION_IDX_FULL_SCREEN));
-	setNum(OPTION_IDX_FPS,
-		opt->getNum(OPTION_IDX_FPS));
-	setFile(OPTION_IDX_BG_FILE,
-		opt->getFile(OPTION_IDX_BG_FILE));
-	setNum(OPTION_IDX_INTERVAL_AUTO,
-		opt->getNum(OPTION_IDX_INTERVAL_AUTO));
-	setKey(OPTION_IDX_AUTO_KEY,
-		opt->getKey(OPTION_IDX_AUTO_KEY));
-	setNum(OPTION_IDX_X_SPEED,
-		opt->getNum(OPTION_IDX_X_SPEED));
-	setNum(OPTION_IDX_Y_SPEED,
-		opt->getNum(OPTION_IDX_Y_SPEED));
-	setNum(OPTION_IDX_Z_SPEED,
-		opt->getNum(OPTION_IDX_Z_SPEED));
-	setFlag(OPTION_IDX_REVERSE_X,
-		opt->getFlag(OPTION_IDX_REVERSE_X));
-	setFlag(OPTION_IDX_REVERSE_Y,
-		opt->getFlag(OPTION_IDX_REVERSE_Y));
-	setFlag(OPTION_IDX_REVERSE_Z,
-		opt->getFlag(OPTION_IDX_REVERSE_Z));
-	setFlag(OPTION_IDX_REVERSE_SHIFT,
-		opt->getFlag(OPTION_IDX_REVERSE_SHIFT));
+	for (int i = OPTION_IDX_BEGIN; i <= OPTION_IDX_END; i++)
+		mergeGraphConfigOption(opt, (OptionIdx)i);
+
+	for (char c = 'a'; c <= 'z'; c++)
+		mergeGraphConfigCaption(opt, c);
 
 	char c;
-	for (c = 'a'; c <= 'z'; c++)
-		setCaption(c, opt->getCaption(c));
-
 	c = ' ';
-	setCaption(c, opt->getCaption(c));
+	mergeGraphConfigCaption(opt, c);
+
 	c = '\n';
-	setCaption(c, opt->getCaption(c));
+	mergeGraphConfigCaption(opt, c);
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定のオプションをマージ
+// Option *opt : マージ元の設定
+// OptionIdx idx : オプション
+////////////////////////////////////////////////////////////////
+
+void Option::mergeGraphConfigOption(Option *opt, OptionIdx idx)
+{
+	if (opt == NULL)
+		return;
+
+	if (!opt->flagModifiedOption[idx])
+		return;
+
+	switch (OptionTypeArray[idx]) {
+	case OPTION_TYPE_FLAG:
+		setFlag(idx, opt->getFlag(idx));
+		break;
+	case OPTION_TYPE_NUM:
+		setNum(idx, opt->getNum(idx));
+		break;
+	case OPTION_TYPE_KEY:
+		setKey(idx, opt->getKey(idx));
+		break;
+	case OPTION_TYPE_FILE:
+		setFile(idx, opt->getFile(idx));
+		break;
+	case OPTION_TYPE_MAX:
+		break;
+	}
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定のキャプションをマージ
+// Option *opt : マージ元の設定
+// char key : キャプションのキー
+////////////////////////////////////////////////////////////////
+
+void Option::mergeGraphConfigCaption(Option *opt, char key)
+{
+	if (opt == NULL)
+		return;
+
+	if (opt->getFlagModifiedCaption(key))
+		setCaption(key, opt->getCaption(key));
 }
 
 ////////////////////////////////////////////////////////////////
@@ -886,7 +936,7 @@ void Option::setFlag(OptionIdx idx, bool flag)
 	else
 		this->file[idx] = "false";
 
-	this->flagModified[idx] = true;
+	this->flagModifiedOption[idx] = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -909,7 +959,7 @@ void Option::setNum(OptionIdx idx, double num)
 	str << num;
 	this->file[idx] = str.str();
 
-	this->flagModified[idx] = true;
+	this->flagModifiedOption[idx] = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -932,7 +982,7 @@ void Option::setKey(OptionIdx idx, int key)
 	str << (char)key;
 	this->file[idx] = str.str();
 
-	this->flagModified[idx] = true;
+	this->flagModifiedOption[idx] = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -953,7 +1003,7 @@ void Option::setFile(OptionIdx idx, const std::string &file)
 	this->key[idx] = ' ';
 	this->file[idx] = file;
 
-	this->flagModified[idx] = true;
+	this->flagModifiedOption[idx] = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -966,10 +1016,12 @@ void Option::setCaption(char key, const std::string &str)
 {
 	if (key == ' ') {
 		captionSpace = str;
+		flagModifiedCaptionSpace = true;
 		return;
 	}
 	if ((key == '\n') || (key == '\r')) {
 		captionEnter = str;
+		flagModifiedCaptionEnter = true;
 		return;
 	}
 
@@ -980,6 +1032,7 @@ void Option::setCaption(char key, const std::string &str)
 		return;
 
 	caption[n] = str;
+	flagModifiedCaption[n] = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -990,6 +1043,7 @@ void Option::setCaption(char key, const std::string &str)
 void Option::setGraphDir(const std::string &dir)
 {
 	graphDir = dir;
+	flagModifiedGraphDir = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1000,6 +1054,7 @@ void Option::setGraphDir(const std::string &dir)
 void Option::setMusicDir(const std::string &dir)
 {
 	musicDir = dir;
+	flagModifiedMusicDir = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1143,6 +1198,28 @@ std::string Option::getGraphDir()
 std::string Option::getMusicDir()
 {
 	return musicDir;
+}
+
+////////////////////////////////////////////////////////////////
+// キャプションの修整フラグを取得
+// char key : キャプションのキー
+// return : キャプションの修整フラグ
+////////////////////////////////////////////////////////////////
+
+bool Option::getFlagModifiedCaption(char key)
+{
+	if (key == ' ')
+		return flagModifiedCaptionSpace;
+	if ((key == '\n') || (key == '\r'))
+		return flagModifiedCaptionEnter;
+
+	int n = tolower(key) - 'a';
+	if (n < 0)
+		return false;
+	if (n >= CAPTION_MAX)
+		return false;
+
+	return flagModifiedCaption[n];
 }
 
 ////////////////////////////////////////////////////////////////

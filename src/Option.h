@@ -57,6 +57,17 @@ enum OptionIdx {
 	OPTION_IDX_HELP,
 	OPTION_IDX_DEBUG,
 	OPTION_IDX_MAX,
+
+	OPTION_IDX_BEGIN = 0,
+	OPTION_IDX_END = OPTION_IDX_MAX - 1,
+};
+
+enum OptionType {
+	OPTION_TYPE_FLAG,
+	OPTION_TYPE_NUM,
+	OPTION_TYPE_KEY,
+	OPTION_TYPE_FILE,
+	OPTION_TYPE_MAX,
 };
 
 enum ArgArrayIdx {
@@ -73,21 +84,30 @@ class Option {
 public:
 
 private:
-	bool flagModified[OPTION_IDX_MAX];
+	static const int CAPTION_MAX = 'z' - 'a' + 1;
+
+	bool flagModifiedOption[OPTION_IDX_MAX];
+	bool flagModifiedCaption[CAPTION_MAX];
+	bool flagModifiedCaptionSpace;
+	bool flagModifiedCaptionEnter;
+	bool flagModifiedGraphDir;
+	bool flagModifiedMusicDir;
+
+	enum OptionType OptionTypeArray[OPTION_IDX_MAX];
 
 	bool flag[OPTION_IDX_MAX];
 	double num[OPTION_IDX_MAX];
 	int key[OPTION_IDX_MAX];
 	std::string file[OPTION_IDX_MAX];
 
-	static const int CAPTION_MAX = 'z' - 'a' + 1;
 	std::string caption[CAPTION_MAX];
 	std::string captionSpace;
 	std::string captionEnter;
 
-	std::vector<std::string> argArray;
 	std::string graphDir;
 	std::string musicDir;
+
+	std::vector<std::string> argArray;
 
 public:
 	Option();
@@ -137,6 +157,8 @@ private:
 
 	void mergeCommonConfig(Option *opt);
 	void mergeGraphConfig(Option *opt);
+	void mergeGraphConfigOption(Option *opt, OptionIdx n);
+	void mergeGraphConfigCaption(Option *opt, char key);
 
 	// void saveAllConfig();
 	void saveConfigVersion(FILE *fp);
@@ -177,6 +199,8 @@ private:
 	// std::string getCaption(char key);
 	// std::string getStringGraphDir();
 	// std::string getStringMusicDir();
+
+	bool getFlagModifiedCaption(char key);;
 
 	// std::string convertKeyToString(int key);
 	// std::string quoteString(std::string str);
