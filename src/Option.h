@@ -76,6 +76,8 @@ enum ArgArrayIdx {
 	ARG_ARRAY_IDX_MAX,
 };
 
+typedef std::vector<std::string> ArgStrArray;
+
 ////////////////////////////////////////////////////////////////
 // 引数
 ////////////////////////////////////////////////////////////////
@@ -154,6 +156,10 @@ private:
 	// void loadAllConfig(Option *opt);
 	void loadCommonConfig();
 	void loadGraphConfig();
+	void loadConfig(std::string path);
+	void loadConfigContents(ArgStrArray *argStr, FILE *fp);
+	void transConfigStringToArgv(
+		int *argc, char ***argv, ArgStrArray *argStr);
 
 	void mergeCommonConfig(Option *opt);
 	void mergeGraphConfig(Option *opt);

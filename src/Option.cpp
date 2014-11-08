@@ -224,6 +224,8 @@ void Option::loadAllConfig(Option *opt)
 
 void Option::loadCommonConfig()
 {
+	std::string path = getCommonConfigPath();
+	loadConfig(path);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -232,6 +234,85 @@ void Option::loadCommonConfig()
 
 void Option::loadGraphConfig()
 {
+	std::string path = getGraphConfigPath();
+	loadConfig(path);
+}
+
+////////////////////////////////////////////////////////////////
+// 設定の読み込み
+// std::string path : 設定ファイルのパス
+////////////////////////////////////////////////////////////////
+
+void Option::loadConfig(std::string path)
+{
+	// 設定ファイルの読み込み
+
+	FILE *fp = openConfig(path.c_str(), "r");
+	if (fp == NULL)
+		return;
+
+	ArgStrArray argStr;
+	loadConfigContents(&argStr, fp);
+
+	closeConfig(fp);
+
+	// 引数に変換
+
+	int argc;
+	char **argv;
+	transConfigStringToArgv(&argc, &argv, &argStr);
+
+	// 引数として解析
+
+	parseOption(argc, argv);
+}
+
+////////////////////////////////////////////////////////////////
+// 設定の内容の読み込み
+// FILE *fp : 設定のファイル
+// ArgStrArray *argStr : 読み込み先
+////////////////////////////////////////////////////////////////
+
+void Option::loadConfigContents(ArgStrArray *argStr, FILE *fp)
+{
+	if (argStr == NULL)
+		return;
+}
+
+////////////////////////////////////////////////////////////////
+// 設定文字列を引数に変換
+// int *argc : 引数の数を返す
+// char ***argv : 引数の配列確保して返す
+// ArgStrArray *argStr : 変換元
+////////////////////////////////////////////////////////////////
+
+void Option::transConfigStringToArgv(
+	int *argc, char ***argv, ArgStrArray *argStr)
+{
+	if (argStr == NULL)
+		return;
+	if (argc == NULL)
+		return;
+	if (argv == NULL)
+		return;
+
+	size_t argMax = argStr->size();
+	*argv = (char **)calloc(argMax, sizeof(char **));
+
+	int i = 0;
+	for (vector<std::string>::iterator it = argStr->begin();
+		it != argStr->end(); ++it)
+	{
+		std::string str = *it;
+		const char *sSrc = str.c_str();
+
+		size_t argLen = strlen(sSrc) + 1;
+		char *sDst = (char *)calloc(argLen, sizeof(char *));
+		strcpy(sDst, sSrc);
+
+		(*argv)[i] = sDst;
+		i++;
+	}
 }
 
 ////////////////////////////////////////////////////////////////
@@ -336,6 +417,7 @@ void Option::saveAllConfig()
 
 ////////////////////////////////////////////////////////////////
 // バージョン番号の保存
+// FILE *fp : 設定のファイル
 ////////////////////////////////////////////////////////////////
 
 void Option::saveConfigVersion(FILE *fp)
@@ -368,6 +450,7 @@ void Option::saveCommonConfig()
 
 ////////////////////////////////////////////////////////////////
 // 共通設定の内容の保存
+// FILE *fp : 設定のファイル
 ////////////////////////////////////////////////////////////////
 
 void Option::saveCommonConfigContents(FILE *fp)
@@ -409,6 +492,7 @@ void Option::saveGraphConfig()
 
 ////////////////////////////////////////////////////////////////
 // グラフィック設定の内容の保存
+// FILE *fp : 設定のファイル
 ////////////////////////////////////////////////////////////////
 
 void Option::saveGraphConfigContents(FILE *fp)
