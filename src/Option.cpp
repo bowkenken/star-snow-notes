@@ -146,6 +146,23 @@ void Option::init()
 		key[i] = ' ';
 		file[i] = "err";
 	}
+
+	OptionTypeArray[OPTION_IDX_INIT] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_SAVE] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_STAR_NUMBER] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_FULL_SCREEN] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_FPS] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_BG_FILE] = OPTION_TYPE_FILE;
+	OptionTypeArray[OPTION_IDX_INTERVAL_AUTO] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_AUTO_KEY] = OPTION_TYPE_KEY;
+	OptionTypeArray[OPTION_IDX_X_SPEED] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_Y_SPEED] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_Z_SPEED] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_REVERSE_X] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_REVERSE_Y] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_REVERSE_Z] = OPTION_TYPE_FLAG;
+	OptionTypeArray[OPTION_IDX_REVERSE_SHIFT] = OPTION_TYPE_FLAG;
+
 	setFlag(OPTION_IDX_INIT, false);
 	setFlag(OPTION_IDX_SAVE, false);
 	setNum(OPTION_IDX_STAR_NUMBER, 10240);
@@ -162,31 +179,391 @@ void Option::init()
 	setFlag(OPTION_IDX_REVERSE_Z, false);
 	setFlag(OPTION_IDX_REVERSE_SHIFT, false);
 
-	for (int i = 0; i < CAPTION_MAX; i++) {
+	for (char c = 'a'; c <= 'z'; c++) {
 		char str[128 + 1];
-		sprintf(str, "%c:\n%s", (char)('A' + i), "Star");
-		caption[i] = str;
+		::sprintf(str, "%c:\n%s", c, "Star");
+		setCaption(c, str);
 	}
-	captionSpace = "Space:\n" "random";
-	captionEnter = "Enter:\n" "repeat";
+	setCaption(' ', "Space:\n" "Random");
+	setCaption('\n', "Enter:\n" "Repeat");
+
+	setGraphDir(DEFAULT_GRAPH_DIR);
+	setMusicDir(DEFAULT_MUSIC_DIR);
+
+	// 設定が変更されなかった事にする
+
+	for (int i = 0; i < OPTION_IDX_MAX; i++)
+		flagModifiedOption[i] = false;
+	for (int i = 0; i < CAPTION_MAX; i++)
+		flagModifiedCaption[i] = false;
+	flagModifiedCaptionSpace = false;
+	flagModifiedCaptionEnter = false;
+	flagModifiedGraphDir = false;
+	flagModifiedMusicDir = false;
 
 	argArray.clear();
-	stringGraphDir = DEFAULT_GRAPH_DIR;
-	stringMusicDir = DEFAULT_MUSIC_DIR;
 }
 
 ////////////////////////////////////////////////////////////////
-// 全ての設定の保存
+// 全ての設定を読み込み
+// Option *opt : 共通設定の参照元
+////////////////////////////////////////////////////////////////
+
+void Option::loadAllConfig(Option *opt)
+{
+	loadCommonConfig();
+	mergeCommonConfig(opt);
+
+	loadGraphConfig();
+	mergeGraphConfig(opt);
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定の読み込み
+////////////////////////////////////////////////////////////////
+
+void Option::loadCommonConfig()
+{
+	std::string path = getCommonConfigPath();
+	loadConfig(path);
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定の読み込み
+////////////////////////////////////////////////////////////////
+
+void Option::loadGraphConfig()
+{
+	std::string path = getGraphConfigPath();
+	loadConfig(path);
+}
+
+////////////////////////////////////////////////////////////////
+// 設定の読み込み
+// std::string path : 設定ファイルのパス
+////////////////////////////////////////////////////////////////
+
+void Option::loadConfig(std::string path)
+{
+	// 設定ファイルの読み込み
+
+	FILE *fp = openConfig(path.c_str(), "r");
+	if (fp == NULL)
+		return;
+
+	ArgStrArray argStr;
+	loadConfigContents(&argStr, fp);
+
+	closeConfig(fp);
+
+	// 引数に変換
+
+	int argc;
+	char **argv;
+	transConfigStringToArgv(&argc, &argv, &argStr);
+
+	// 引数として解析
+
+	parseOption(argc, argv);
+}
+
+////////////////////////////////////////////////////////////////
+// 設定の内容の読み込み
+// FILE *fp : 設定のファイル
+// ArgStrArray *argStr : 読み込み先
+////////////////////////////////////////////////////////////////
+
+void Option::loadConfigContents(ArgStrArray *argStr, FILE *fp)
+{
+	if (argStr == NULL)
+		return;
+
+	while (!::feof(fp)) {
+		std::string str = "";
+		if (!loadConfigToken(&str, fp))
+			break;
+
+		argStr->push_back(str);
+
+		//::fprintf(stderr, "cmd line [%s]\n", str.c_str());
+	}
+
+	//::fprintf(stderr, "\n");
+}
+
+////////////////////////////////////////////////////////////////
+// 設定ファイルからトークンを一つ読み込む
+// std::string *str : 読み込んだトークンを返す
+// FILE *fp : 設定のファイル
+// return : EOFか？
+////////////////////////////////////////////////////////////////
+
+bool Option::loadConfigToken(std::string *str, FILE *fp)
+{
+	if (str == NULL)
+		return false;
+	*str = "";
+
+	if (fp == NULL)
+		return false;
+
+	// 空白文字を読み飛ばす
+
+	while (!::feof(fp)) {
+		int c = ::getc(fp);
+
+		if (c == EOF) {
+			return false;
+		} else if ((c == ' ') || (c == '\n') || (c == '\r')) {
+			continue;
+		} else if (c == '#') {
+			// コメントを読み飛ばす
+
+			while (!::feof(fp)) {
+				int c = ::getc(fp);
+				if ((c == '\n') || (c == '\r')) {
+					break;
+				}
+			}
+		} else {
+			::ungetc(c, fp);
+			break;
+		}
+	}
+
+	std::string s = "";
+	int quote = ' ';
+
+	while (!::feof(fp)) {
+		int c = ::getc(fp);
+
+		if (c == EOF) {
+			break;
+		} else if (c == '\0') {
+			break;
+		} else if (c == '\\') {
+			c = loadConfigEscapeChar(fp);
+			if (c == '\0') {
+				continue;
+			}
+		} else if ((c == ' ') || (c == '\n') || (c == '\r')) {
+			if (quote == ' ') {
+				break;
+			}
+		} else if ((c == '\'') || (c == '\"')) {
+			if (quote == ' ') {
+				quote = c;
+				continue;
+			} else if (quote == c) {
+				quote = ' ';
+				continue;
+			}
+		}
+
+		s += c;
+	}
+
+	*str = s;
+
+	return true;
+}
+
+////////////////////////////////////////////////////////////////
+// 設定ファイルからメタ文字を一つ読み込む
+// FILE *fp : 設定のファイル
+// return : 読み込んだメタ文字
+////////////////////////////////////////////////////////////////
+
+char Option::loadConfigEscapeChar(FILE *fp)
+{
+	if (fp == NULL)
+		return '\0';
+	if (::feof(fp))
+		return '\0';
+
+	int c = ::getc(fp);
+
+	if (c == EOF)
+		return '\0';
+	if (!::isalpha(c))
+		return c;
+
+	switch (c) {
+	case 'n':
+	case 'r':
+		c = '\n';
+		break;
+	case 't':
+		c = '\t';
+		break;
+	case '\n':
+	case '\r':
+		c = '\0';
+	}
+
+	return c;
+}
+
+////////////////////////////////////////////////////////////////
+// 設定文字列を引数に変換
+// int *argc : 引数の数を返す
+// char ***argv : 引数の配列確保して返す
+// ArgStrArray *argStr : 変換元
+////////////////////////////////////////////////////////////////
+
+void Option::transConfigStringToArgv(
+	int *argc, char ***argv, ArgStrArray *argStr)
+{
+	if (argStr == NULL)
+		return;
+	if (argc == NULL)
+		return;
+	if (argv == NULL)
+		return;
+
+	size_t argMax = argStr->size();
+	*argv = (char **)calloc(argMax, sizeof(char **));
+	*argc = 0;
+	int i = 0;
+
+	// コマンド名
+
+	const char *sSrc = STRING_FILE_NAME_GAME;
+	size_t argLen = strlen(sSrc) + 1;
+	char *sDst = (char *)calloc(argLen, sizeof(char *));
+	strcpy(sDst, sSrc);
+
+	//::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
+
+	(*argv)[i] = sDst;
+	(*argc)++;
+	i++;
+
+	// コマンド行の引数
+
+	for (vector<std::string>::iterator it = argStr->begin();
+		it != argStr->end(); ++it)
+	{
+		std::string str = *it;
+		const char *sSrc = str.c_str();
+
+		size_t argLen = strlen(sSrc) + 1;
+		char *sDst = (char *)calloc(argLen, sizeof(char *));
+		strcpy(sDst, sSrc);
+
+		//::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
+
+		(*argv)[i] = sDst;
+		(*argc)++;
+		i++;
+	}
+
+	//::fprintf(stderr, "\n");
+}
+
+////////////////////////////////////////////////////////////////
+// 共通設定をマージ
+// Option *opt : マージ元の設定
+////////////////////////////////////////////////////////////////
+
+void Option::mergeCommonConfig(Option *opt)
+{
+	if (opt == NULL)
+		return;
+
+	if (opt->flagModifiedGraphDir)
+		setGraphDir(opt->getGraphDir());
+	if (opt->flagModifiedMusicDir)
+		setMusicDir(opt->getMusicDir());
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定をマージ
+// Option *opt : マージ元の設定
+////////////////////////////////////////////////////////////////
+
+void Option::mergeGraphConfig(Option *opt)
+{
+	if (opt == NULL)
+		return;
+
+	for (int i = OPTION_IDX_BEGIN; i <= OPTION_IDX_END; i++)
+		mergeGraphConfigOption(opt, (OptionIdx)i);
+
+	for (char c = 'a'; c <= 'z'; c++)
+		mergeGraphConfigCaption(opt, c);
+
+	char c;
+	c = ' ';
+	mergeGraphConfigCaption(opt, c);
+
+	c = '\n';
+	mergeGraphConfigCaption(opt, c);
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定のオプションをマージ
+// Option *opt : マージ元の設定
+// OptionIdx idx : オプション
+////////////////////////////////////////////////////////////////
+
+void Option::mergeGraphConfigOption(Option *opt, OptionIdx idx)
+{
+	if (opt == NULL)
+		return;
+
+	if (!opt->flagModifiedOption[idx])
+		return;
+
+	switch (OptionTypeArray[idx]) {
+	case OPTION_TYPE_FLAG:
+		setFlag(idx, opt->getFlag(idx));
+		break;
+	case OPTION_TYPE_NUM:
+		setNum(idx, opt->getNum(idx));
+		break;
+	case OPTION_TYPE_KEY:
+		setKey(idx, opt->getKey(idx));
+		break;
+	case OPTION_TYPE_FILE:
+		setFile(idx, opt->getFile(idx));
+		break;
+	case OPTION_TYPE_MAX:
+		break;
+	}
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック設定のキャプションをマージ
+// Option *opt : マージ元の設定
+// char key : キャプションのキー
+////////////////////////////////////////////////////////////////
+
+void Option::mergeGraphConfigCaption(Option *opt, char key)
+{
+	if (opt == NULL)
+		return;
+
+	if (opt->getFlagModifiedCaption(key))
+		setCaption(key, opt->getCaption(key));
+}
+
+////////////////////////////////////////////////////////////////
+// 全ての設定を保存
 ////////////////////////////////////////////////////////////////
 
 void Option::saveAllConfig()
 {
+	if (!getFlag(OPTION_IDX_SAVE))
+		return;
+
 	saveCommonConfig();
 	saveGraphConfig();
 }
 
 ////////////////////////////////////////////////////////////////
 // バージョン番号の保存
+// FILE *fp : 設定のファイル
 ////////////////////////////////////////////////////////////////
 
 void Option::saveConfigVersion(FILE *fp)
@@ -219,6 +596,7 @@ void Option::saveCommonConfig()
 
 ////////////////////////////////////////////////////////////////
 // 共通設定の内容の保存
+// FILE *fp : 設定のファイル
 ////////////////////////////////////////////////////////////////
 
 void Option::saveCommonConfigContents(FILE *fp)
@@ -233,11 +611,11 @@ void Option::saveCommonConfigContents(FILE *fp)
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Graphic Directly\n");
-	printfConfig(fp, "%s\n", quoteString(getStringGraphDir()).c_str());
+	printfConfig(fp, "%s\n", quoteString(getGraphDir()).c_str());
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Music Directly\n");
-	printfConfig(fp, "%s\n", quoteString(getStringMusicDir()).c_str());
+	printfConfig(fp, "%s\n", quoteString(getMusicDir()).c_str());
 	printfConfig(fp, "\n");
 }
 
@@ -260,6 +638,7 @@ void Option::saveGraphConfig()
 
 ////////////////////////////////////////////////////////////////
 // グラフィック設定の内容の保存
+// FILE *fp : 設定のファイル
 ////////////////////////////////////////////////////////////////
 
 void Option::saveGraphConfigContents(FILE *fp)
@@ -362,10 +741,10 @@ void Option::saveGraphConfigContents(FILE *fp)
 
 FILE *Option::openConfig(const char *path, const char *mode)
 {
-	FILE *fp = fopen(path, mode);
+	FILE *fp = ::fopen(path, mode);
 
 	if (fp == NULL)
-		perror("ERROR");
+		::perror("ERROR");
 
 	return fp;
 }
@@ -378,10 +757,10 @@ FILE *Option::openConfig(const char *path, const char *mode)
 
 int Option::closeConfig(FILE *fp)
 {
-	int res = fclose(fp);
+	int res = ::fclose(fp);
 
 	if (res == EOF)
-		perror("ERROR");
+		::perror("ERROR");
 
 	return res;
 }
@@ -398,12 +777,12 @@ int Option::printfConfig(FILE *fp, const char *fmt, ...)
 {
 	va_list argptr;
 
-	va_start(argptr, fmt);
-	int res = vfprintf(fp, fmt, argptr);
-	va_end(argptr);
+	::va_start(argptr, fmt);
+	int res = ::vfprintf(fp, fmt, argptr);
+	::va_end(argptr);
 
 	if (res == EOF)
-		perror("ERROR");
+		::perror("ERROR");
 
 	return res;
 }
@@ -417,7 +796,7 @@ std::string Option::getCommonConfigPath()
 	std::string path = "";
 	path = FileList::jointDir( FileList::getHomeDir(), STR_DIR_BASE );
 	path = FileList::jointDir( path, COMMON_CONFIG_FILE );
-	// fprintf(stderr, "[common option file path=%s]\n", path.c_str());
+	//::fprintf(stderr, "[common option file path=%s]\n", path.c_str());
 
 	return path;
 }
@@ -428,14 +807,14 @@ std::string Option::getCommonConfigPath()
 
 std::string Option::getGraphConfigPath()
 {
-	std::string dir = getStringGraphDir();
+	std::string dir = getGraphDir();
 
 	std::string path = "";
 	path = FileList::jointDir( FileList::getHomeDir(),
 		STR_DIR_BASE_GRAPH );
 	path = FileList::jointDir( path, dir );
 	path = FileList::jointDir( path, GRAPH_CONFIG_FILE );
-	// fprintf(stderr, "[graph option file path=%s]\n", path.c_str());
+	// ::fprintf(stderr, "[graph option file path=%s]\n", path.c_str());
 
 	return path;
 }
@@ -454,8 +833,12 @@ void Option::parseOption(int argc, char **argv)
 	long	optind = argc;
 #endif	// !defined(HAVE_GETOPT) && !defined(HAVE_GETOPT_LONG)
 
+	//::fprintf(stderr, "parseOption begin\n");
+
 	if (argv == NULL)
 		return;
+
+	//::fprintf(stderr, "argc: %d, argv:%p\n", argc, argv);
 
 	while (1) {
 		long	c;
@@ -464,10 +847,10 @@ void Option::parseOption(int argc, char **argv)
 #endif	// HAVE_GETOPT_LONG
 
 #if	defined(HAVE_GETOPT_LONG)
-		c = getopt_long(argc, argv,
+		c = ::getopt_long(argc, argv,
 			gStringOption, gLongOption, &optIdx);
 #elif	defined(HAVE_GETOPT)
-		c = getopt(argc, argv, gStringOption);
+		c = ::getopt(argc, argv, gStringOption);
 #else	// HAVE_GETOPT_LONG
 		n++;
 		if (n > argc - 1)
@@ -482,6 +865,9 @@ void Option::parseOption(int argc, char **argv)
 
 		if (c <= -1)
 			break;
+
+		//::fprintf(stderr, "parseOption [-%c][%s]\n",
+		//	(char)c, optarg);
 
 		switch (c) {
 		case 'i':
@@ -550,6 +936,9 @@ void Option::parseOption(int argc, char **argv)
 	}
 
 	parseArg(argc, argv, optind);
+
+	//::fprintf(stderr, "parseOption end\n");
+	//::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -565,6 +954,8 @@ void Option::parseArg(int argc, char **argv, int optind)
 		char *p = strchr(argv[optind], '=');
 		if (p == NULL) {
 			argArray.push_back(argv[optind]);
+
+			//::fprintf(stderr, "parseArg [%s]\n", argv[optind]);
 		} else {
 			long len = p - argv[optind];
 			if (len <= 0)
@@ -576,6 +967,8 @@ void Option::parseArg(int argc, char **argv, int optind)
 			value.erase(0, len + 1);
 
 			parseKeyValue(key, value);
+
+			//::fprintf(stderr, "parseArg [%s]\n", key.c_str());
 		}
 	}
 
@@ -587,12 +980,12 @@ void Option::parseArg(int argc, char **argv, int optind)
 	}
 
 	if (size > ARG_ARRAY_IDX_GRAPH)
-		stringGraphDir = argArray[ARG_ARRAY_IDX_GRAPH];
+		setGraphDir(argArray[ARG_ARRAY_IDX_GRAPH]);
 	if (size > ARG_ARRAY_IDX_MUSIC)
-		stringMusicDir = argArray[ARG_ARRAY_IDX_MUSIC];
+		setMusicDir(argArray[ARG_ARRAY_IDX_MUSIC]);
 
-	// fprintf(stderr, "[graph=%s]\n", stringGraphDir.c_str());
-	// fprintf(stderr, "[music=%s]\n", stringMusicDir.c_str());
+	// ::fprintf(stderr, "[graph=%s]\n", getGraphDir().c_str());
+	// ::fprintf(stderr, "[music=%s]\n", getMusicDir().c_str());
 }
 
 ////////////////////////////////////////////////////////////////
@@ -610,38 +1003,37 @@ void Option::parseKeyValue(
 		str.erase(len - 1);
 
 		char c = key[len - 1];
-		int idx = tolower(c) - 'a';
 
 		if (str == "caption-") {
-			if (idx < 0)
+			if (c < 'a')
 				return;
-			if (idx >= CAPTION_MAX)
+			if (c > 'z')
 				return;
 
-			// fprintf(stderr, "[caption-%c=%s]\n",
+			// ::fprintf(stderr, "[caption-%c=%s]\n",
 			//	c, value.c_str());
-			caption[idx] = value;
+			setCaption(c, value);
 			return;
 		}
 	}
 
 	if (key == "caption-space") {
-		captionSpace = value;
+		setCaption(' ', value);
 		return;
 	}
 	if (key == "caption-enter") {
-		captionEnter = value;
+		setCaption('\n', value);
 		return;
 	}
 
 	if ((key == "graph") || (key == "graphic")) {
-		// fprintf(stderr, "[graph=%s]\n", value.c_str());
-		stringGraphDir = value;
+		// ::fprintf(stderr, "[graph=%s]\n", value.c_str());
+		setGraphDir(value);
 		return;
 	}
 	if (key == "music") {
-		// fprintf(stderr, "[music=%s]\n", value.c_str());
-		stringMusicDir = value;
+		// ::fprintf(stderr, "[music=%s]\n", value.c_str());
+		setMusicDir(value);
 		return;
 	}
 
@@ -717,7 +1109,7 @@ double Option::parseNum(const char *optarg)
 	}
 
 	do {
-		if (isdigit(optarg[0]))
+		if (::isdigit(optarg[0]))
 			break;
 		if (optarg[0] == '+')
 			break;
@@ -730,7 +1122,7 @@ double Option::parseNum(const char *optarg)
 		return 0.0;
 	} while(0);
 
-	sscanf(optarg, "%lf", &num);
+	::sscanf(optarg, "%lf", &num);
 
 	return num;
 }
@@ -751,14 +1143,18 @@ char Option::parseChar(const char *optarg)
 
 		return errChar;
 	}
-	if (optarg[1] != '\0') {
+	if ((optarg[0] != '\0') && (optarg[1] != '\0')) {
 		usage(stderr);
 		exitGame(EXIT_FAILURE);
 
 		return errChar;
 	}
 
-	char c = tolower(optarg[0]);
+	char c = optarg[0];
+	if (c == '\0')
+		return '\0';
+
+	c = ::tolower(c);
 	if (c < 'a')
 		return errChar;
 	if (c > 'z')
@@ -788,7 +1184,7 @@ void Option::setFlag(OptionIdx idx, bool flag)
 	else
 		this->file[idx] = "false";
 
-	this->flagModified[idx] = true;
+	this->flagModifiedOption[idx] = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -811,7 +1207,7 @@ void Option::setNum(OptionIdx idx, double num)
 	str << num;
 	this->file[idx] = str.str();
 
-	this->flagModified[idx] = true;
+	this->flagModifiedOption[idx] = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -834,7 +1230,7 @@ void Option::setKey(OptionIdx idx, int key)
 	str << (char)key;
 	this->file[idx] = str.str();
 
-	this->flagModified[idx] = true;
+	this->flagModifiedOption[idx] = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -855,7 +1251,58 @@ void Option::setFile(OptionIdx idx, const std::string &file)
 	this->key[idx] = ' ';
 	this->file[idx] = file;
 
-	this->flagModified[idx] = true;
+	this->flagModifiedOption[idx] = true;
+}
+
+////////////////////////////////////////////////////////////////
+// キャプションの値を設定
+// char key : キャプションのキー
+// const std::string &str : キャプションの値
+////////////////////////////////////////////////////////////////
+
+void Option::setCaption(char key, const std::string &str)
+{
+	if (key == ' ') {
+		captionSpace = str;
+		flagModifiedCaptionSpace = true;
+		return;
+	}
+	if ((key == '\n') || (key == '\r')) {
+		captionEnter = str;
+		flagModifiedCaptionEnter = true;
+		return;
+	}
+
+	int n = ::tolower(key) - 'a';
+	if (n < 0)
+		return;
+	if (n >= CAPTION_MAX)
+		return;
+
+	caption[n] = str;
+	flagModifiedCaption[n] = true;
+}
+
+////////////////////////////////////////////////////////////////
+// グラフィック・ディレクトリを設定
+// const std::string &dir : ディレクトリ
+////////////////////////////////////////////////////////////////
+
+void Option::setGraphDir(const std::string &dir)
+{
+	graphDir = dir;
+	flagModifiedGraphDir = true;
+}
+
+////////////////////////////////////////////////////////////////
+// BGM・ディレクトリを設定
+// const std::string &dir : ディレクトリ
+////////////////////////////////////////////////////////////////
+
+void Option::setMusicDir(const std::string &dir)
+{
+	musicDir = dir;
+	flagModifiedMusicDir = true;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -969,12 +1416,10 @@ std::string Option::getCaption(char key)
 {
 	if (key == ' ')
 		return captionSpace;
-	if (key == '\n')
-		return captionEnter;
-	if (key == '\r')
+	if ((key == '\n') || (key == '\r'))
 		return captionEnter;
 
-	int n = tolower(key) - 'a';
+	int n = ::tolower(key) - 'a';
 	if (n < 0)
 		return "";
 	if (n >= CAPTION_MAX)
@@ -988,9 +1433,9 @@ std::string Option::getCaption(char key)
 // return : パス
 ////////////////////////////////////////////////////////////////
 
-std::string Option::getStringGraphDir()
+std::string Option::getGraphDir()
 {
-	return stringGraphDir;
+	return graphDir;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -998,9 +1443,31 @@ std::string Option::getStringGraphDir()
 // return : パス
 ////////////////////////////////////////////////////////////////
 
-std::string Option::getStringMusicDir()
+std::string Option::getMusicDir()
 {
-	return stringMusicDir;
+	return musicDir;
+}
+
+////////////////////////////////////////////////////////////////
+// キャプションの修整フラグを取得
+// char key : キャプションのキー
+// return : キャプションの修整フラグ
+////////////////////////////////////////////////////////////////
+
+bool Option::getFlagModifiedCaption(char key)
+{
+	if (key == ' ')
+		return flagModifiedCaptionSpace;
+	if ((key == '\n') || (key == '\r'))
+		return flagModifiedCaptionEnter;
+
+	int n = ::tolower(key) - 'a';
+	if (n < 0)
+		return false;
+	if (n >= CAPTION_MAX)
+		return false;
+
+	return flagModifiedCaption[n];
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1012,7 +1479,7 @@ std::string Option::getStringMusicDir()
 std::string Option::convertKeyToString(int key)
 {
 	char buf[31 + 1] = " ";
-	sprintf(buf, "%c", key);
+	::sprintf(buf, "%c", key);
 
 	return buf;
 }
@@ -1082,8 +1549,8 @@ std::string Option::escapeString(std::string str, bool flagEscapeSpace)
 
 void Option::usage(FILE *fp)
 {
-	fprintf(fp, gStringUsage, STRING_FILE_NAME_GAME);
-	fflush(fp);
+	::fprintf(fp, gStringUsage, STRING_FILE_NAME_GAME);
+	::fflush(fp);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1093,7 +1560,7 @@ void Option::usage(FILE *fp)
 
 void Option::version(FILE *fp)
 {
-	fprintf(fp, STRING_FORMAT_COPYRIGHT, LS_STRING_COPYRIGHT);
-	fflush(fp);
+	::fprintf(fp, STRING_FORMAT_COPYRIGHT, LS_STRING_COPYRIGHT);
+	::fflush(fp);
 }
 

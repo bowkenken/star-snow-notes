@@ -77,9 +77,14 @@ ControlPanel::~ControlPanel()
 // 制御板の初期化
 ////////////////////////////////////////////////////////////////
 
-void ControlPanel::init(Option opt)
+void ControlPanel::init(Option *opt)
 {
-	optionSetting = opt;
+	if (opt == NULL) {
+		opt = new Option;
+		opt->init();
+	}
+
+	setting = opt;
 
 	flagDraw = false;
 	flagFreezed = true;
@@ -99,7 +104,7 @@ void ControlPanel::init(Option opt)
 
 		starButtonArray[i]->init();
 		starButtonArray[i]->setCaption(
-			optionSetting.getCaption('a' + i));
+			setting->getCaption('a' + i));
 		starButtonArray[i]->setKey((SDLKey)(SDLK_a + i));
 	}
 
@@ -110,7 +115,7 @@ void ControlPanel::init(Option opt)
 
 		starButtonSpace->init();
 		starButtonSpace->setCaption(
-			optionSetting.getCaption(' '));
+			setting->getCaption(' '));
 		starButtonSpace->setKey((SDLKey)SDLK_SPACE);
 	} while (false);
 	do {
@@ -120,7 +125,7 @@ void ControlPanel::init(Option opt)
 
 		starButtonEnter->init();
 		starButtonEnter->setCaption(
-			optionSetting.getCaption('\n'));
+			setting->getCaption('\n'));
 		starButtonEnter->setKey((SDLKey)SDLK_RETURN);
 	} while (false);
 

@@ -94,20 +94,19 @@ int main(int argc, char **argv)
 
 	gSetting = new Option;
 	gSetting->init();
-	*gSetting = *gOption;
 
-	if (gSetting->getFlag(OPTION_IDX_SAVE))
-		gSetting->saveAllConfig();//@@@
+	gSetting->loadAllConfig(gOption);
+	gSetting->saveAllConfig();
 
 	::initScreen(&argc, argv);
 
 	gMainSpace = new Space();
-	gMainSpace->init(*gSetting);
+	gMainSpace->init(gSetting);
 	gMainSpace->setFlagFreezed(false);
 	gMainSpace->setFlagDraw(true);
 
 	gMainControlPanel = new StarSnowNotes::ControlPanel();
-	gMainControlPanel->init(*gSetting);
+	gMainControlPanel->init(gSetting);
 	gMainControlPanel->setFlagFreezed(false);
 	gMainControlPanel->setFlagDraw(true);
 

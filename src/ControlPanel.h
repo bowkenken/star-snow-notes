@@ -56,7 +56,8 @@ private:
 	// 星のボタンの最大数
 	static const long starButtonMaxNum = 'z' - 'a' + 1;
 
-	Option optionSetting;
+	// 設定
+	Option *setting;
 
 	// 停止中か?
 	bool flagFreezed;
@@ -89,7 +90,7 @@ private:
 public:
 	ControlPanel();
 	~ControlPanel();
-	void init(Option opt);
+	void init(Option *opt);
 
 	void update();
 	void draw();
