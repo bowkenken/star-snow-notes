@@ -181,7 +181,7 @@ void Option::init()
 
 	for (char c = 'a'; c <= 'z'; c++) {
 		char str[128 + 1];
-		sprintf(str, "%c:\n%s", c, "Star");
+		::sprintf(str, "%c:\n%s", c, "Star");
 		setCaption(c, str);
 	}
 	setCaption(' ', "Space:\n" "Random");
@@ -277,6 +277,131 @@ void Option::loadConfigContents(ArgStrArray *argStr, FILE *fp)
 {
 	if (argStr == NULL)
 		return;
+
+	while (!::feof(fp)) {
+		std::string str = "";
+		if (!loadConfigToken(&str, fp))
+			break;
+
+		argStr->push_back(str);
+
+		//::fprintf(stderr, "cmd line [%s]\n", str.c_str());
+	}
+
+	//::fprintf(stderr, "\n");
+}
+
+////////////////////////////////////////////////////////////////
+// 設定ファイルからトークンを一つ読み込む
+// std::string *str : 読み込んだトークンを返す
+// FILE *fp : 設定のファイル
+// return : EOFか？
+////////////////////////////////////////////////////////////////
+
+bool Option::loadConfigToken(std::string *str, FILE *fp)
+{
+	if (str == NULL)
+		return false;
+	*str = "";
+
+	if (fp == NULL)
+		return false;
+
+	// 空白文字を読み飛ばす
+
+	while (!::feof(fp)) {
+		int c = ::getc(fp);
+
+		if (c == EOF) {
+			return false;
+		} else if ((c == ' ') || (c == '\n') || (c == '\r')) {
+			continue;
+		} else if (c == '#') {
+			// コメントを読み飛ばす
+
+			while (!::feof(fp)) {
+				int c = ::getc(fp);
+				if ((c == '\n') || (c == '\r')) {
+					break;
+				}
+			}
+		} else {
+			::ungetc(c, fp);
+			break;
+		}
+	}
+
+	std::string s = "";
+	int quote = ' ';
+
+	while (!::feof(fp)) {
+		int c = ::getc(fp);
+
+		if (c == EOF) {
+			break;
+		} else if (c == '\0') {
+			break;
+		} else if (c == '\\') {
+			c = loadConfigEscapeChar(fp);
+			if (c == '\0') {
+				continue;
+			}
+		} else if ((c == ' ') || (c == '\n') || (c == '\r')) {
+			if (quote == ' ') {
+				break;
+			}
+		} else if ((c == '\'') || (c == '\"')) {
+			if (quote == ' ') {
+				quote = c;
+				continue;
+			} else if (quote == c) {
+				quote = ' ';
+				continue;
+			}
+		}
+
+		s += c;
+	}
+
+	*str = s;
+
+	return true;
+}
+
+////////////////////////////////////////////////////////////////
+// 設定ファイルからメタ文字を一つ読み込む
+// FILE *fp : 設定のファイル
+// return : 読み込んだメタ文字
+////////////////////////////////////////////////////////////////
+
+char Option::loadConfigEscapeChar(FILE *fp)
+{
+	if (fp == NULL)
+		return '\0';
+	if (::feof(fp))
+		return '\0';
+
+	int c = ::getc(fp);
+
+	if (c == EOF)
+		return '\0';
+	if (!::isalpha(c))
+		return c;
+
+	switch (c) {
+	case 'n':
+	case 'r':
+		c = '\n';
+		break;
+	case 't':
+		c = '\t';
+		break;
+	case '\n':
+	case '\r':
+		c = '\0';
+	}
+
+	return c;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -298,8 +423,24 @@ void Option::transConfigStringToArgv(
 
 	size_t argMax = argStr->size();
 	*argv = (char **)calloc(argMax, sizeof(char **));
-
+	*argc = 0;
 	int i = 0;
+
+	// コマンド名
+
+	const char *sSrc = STRING_FILE_NAME_GAME;
+	size_t argLen = strlen(sSrc) + 1;
+	char *sDst = (char *)calloc(argLen, sizeof(char *));
+	strcpy(sDst, sSrc);
+
+	//::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
+
+	(*argv)[i] = sDst;
+	(*argc)++;
+	i++;
+
+	// コマンド行の引数
+
 	for (vector<std::string>::iterator it = argStr->begin();
 		it != argStr->end(); ++it)
 	{
@@ -310,9 +451,14 @@ void Option::transConfigStringToArgv(
 		char *sDst = (char *)calloc(argLen, sizeof(char *));
 		strcpy(sDst, sSrc);
 
+		//::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
+
 		(*argv)[i] = sDst;
+		(*argc)++;
 		i++;
 	}
+
+	//::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -595,10 +741,10 @@ void Option::saveGraphConfigContents(FILE *fp)
 
 FILE *Option::openConfig(const char *path, const char *mode)
 {
-	FILE *fp = fopen(path, mode);
+	FILE *fp = ::fopen(path, mode);
 
 	if (fp == NULL)
-		perror("ERROR");
+		::perror("ERROR");
 
 	return fp;
 }
@@ -611,10 +757,10 @@ FILE *Option::openConfig(const char *path, const char *mode)
 
 int Option::closeConfig(FILE *fp)
 {
-	int res = fclose(fp);
+	int res = ::fclose(fp);
 
 	if (res == EOF)
-		perror("ERROR");
+		::perror("ERROR");
 
 	return res;
 }
@@ -631,12 +777,12 @@ int Option::printfConfig(FILE *fp, const char *fmt, ...)
 {
 	va_list argptr;
 
-	va_start(argptr, fmt);
-	int res = vfprintf(fp, fmt, argptr);
-	va_end(argptr);
+	::va_start(argptr, fmt);
+	int res = ::vfprintf(fp, fmt, argptr);
+	::va_end(argptr);
 
 	if (res == EOF)
-		perror("ERROR");
+		::perror("ERROR");
 
 	return res;
 }
@@ -650,7 +796,7 @@ std::string Option::getCommonConfigPath()
 	std::string path = "";
 	path = FileList::jointDir( FileList::getHomeDir(), STR_DIR_BASE );
 	path = FileList::jointDir( path, COMMON_CONFIG_FILE );
-	// fprintf(stderr, "[common option file path=%s]\n", path.c_str());
+	//::fprintf(stderr, "[common option file path=%s]\n", path.c_str());
 
 	return path;
 }
@@ -668,7 +814,7 @@ std::string Option::getGraphConfigPath()
 		STR_DIR_BASE_GRAPH );
 	path = FileList::jointDir( path, dir );
 	path = FileList::jointDir( path, GRAPH_CONFIG_FILE );
-	// fprintf(stderr, "[graph option file path=%s]\n", path.c_str());
+	// ::fprintf(stderr, "[graph option file path=%s]\n", path.c_str());
 
 	return path;
 }
@@ -687,8 +833,12 @@ void Option::parseOption(int argc, char **argv)
 	long	optind = argc;
 #endif	// !defined(HAVE_GETOPT) && !defined(HAVE_GETOPT_LONG)
 
+	//::fprintf(stderr, "parseOption begin\n");
+
 	if (argv == NULL)
 		return;
+
+	//::fprintf(stderr, "argc: %d, argv:%p\n", argc, argv);
 
 	while (1) {
 		long	c;
@@ -697,10 +847,10 @@ void Option::parseOption(int argc, char **argv)
 #endif	// HAVE_GETOPT_LONG
 
 #if	defined(HAVE_GETOPT_LONG)
-		c = getopt_long(argc, argv,
+		c = ::getopt_long(argc, argv,
 			gStringOption, gLongOption, &optIdx);
 #elif	defined(HAVE_GETOPT)
-		c = getopt(argc, argv, gStringOption);
+		c = ::getopt(argc, argv, gStringOption);
 #else	// HAVE_GETOPT_LONG
 		n++;
 		if (n > argc - 1)
@@ -715,6 +865,9 @@ void Option::parseOption(int argc, char **argv)
 
 		if (c <= -1)
 			break;
+
+		//::fprintf(stderr, "parseOption [-%c][%s]\n",
+		//	(char)c, optarg);
 
 		switch (c) {
 		case 'i':
@@ -783,6 +936,9 @@ void Option::parseOption(int argc, char **argv)
 	}
 
 	parseArg(argc, argv, optind);
+
+	//::fprintf(stderr, "parseOption end\n");
+	//::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -798,6 +954,8 @@ void Option::parseArg(int argc, char **argv, int optind)
 		char *p = strchr(argv[optind], '=');
 		if (p == NULL) {
 			argArray.push_back(argv[optind]);
+
+			//::fprintf(stderr, "parseArg [%s]\n", argv[optind]);
 		} else {
 			long len = p - argv[optind];
 			if (len <= 0)
@@ -809,6 +967,8 @@ void Option::parseArg(int argc, char **argv, int optind)
 			value.erase(0, len + 1);
 
 			parseKeyValue(key, value);
+
+			//::fprintf(stderr, "parseArg [%s]\n", key.c_str());
 		}
 	}
 
@@ -824,8 +984,8 @@ void Option::parseArg(int argc, char **argv, int optind)
 	if (size > ARG_ARRAY_IDX_MUSIC)
 		setMusicDir(argArray[ARG_ARRAY_IDX_MUSIC]);
 
-	// fprintf(stderr, "[graph=%s]\n", getGraphDir().c_str());
-	// fprintf(stderr, "[music=%s]\n", getMusicDir().c_str());
+	// ::fprintf(stderr, "[graph=%s]\n", getGraphDir().c_str());
+	// ::fprintf(stderr, "[music=%s]\n", getMusicDir().c_str());
 }
 
 ////////////////////////////////////////////////////////////////
@@ -850,7 +1010,7 @@ void Option::parseKeyValue(
 			if (c > 'z')
 				return;
 
-			// fprintf(stderr, "[caption-%c=%s]\n",
+			// ::fprintf(stderr, "[caption-%c=%s]\n",
 			//	c, value.c_str());
 			setCaption(c, value);
 			return;
@@ -867,12 +1027,12 @@ void Option::parseKeyValue(
 	}
 
 	if ((key == "graph") || (key == "graphic")) {
-		// fprintf(stderr, "[graph=%s]\n", value.c_str());
+		// ::fprintf(stderr, "[graph=%s]\n", value.c_str());
 		setGraphDir(value);
 		return;
 	}
 	if (key == "music") {
-		// fprintf(stderr, "[music=%s]\n", value.c_str());
+		// ::fprintf(stderr, "[music=%s]\n", value.c_str());
 		setMusicDir(value);
 		return;
 	}
@@ -949,7 +1109,7 @@ double Option::parseNum(const char *optarg)
 	}
 
 	do {
-		if (isdigit(optarg[0]))
+		if (::isdigit(optarg[0]))
 			break;
 		if (optarg[0] == '+')
 			break;
@@ -962,7 +1122,7 @@ double Option::parseNum(const char *optarg)
 		return 0.0;
 	} while(0);
 
-	sscanf(optarg, "%lf", &num);
+	::sscanf(optarg, "%lf", &num);
 
 	return num;
 }
@@ -983,14 +1143,18 @@ char Option::parseChar(const char *optarg)
 
 		return errChar;
 	}
-	if (optarg[1] != '\0') {
+	if ((optarg[0] != '\0') && (optarg[1] != '\0')) {
 		usage(stderr);
 		exitGame(EXIT_FAILURE);
 
 		return errChar;
 	}
 
-	char c = tolower(optarg[0]);
+	char c = optarg[0];
+	if (c == '\0')
+		return '\0';
+
+	c = ::tolower(c);
 	if (c < 'a')
 		return errChar;
 	if (c > 'z')
@@ -1109,7 +1273,7 @@ void Option::setCaption(char key, const std::string &str)
 		return;
 	}
 
-	int n = tolower(key) - 'a';
+	int n = ::tolower(key) - 'a';
 	if (n < 0)
 		return;
 	if (n >= CAPTION_MAX)
@@ -1255,7 +1419,7 @@ std::string Option::getCaption(char key)
 	if ((key == '\n') || (key == '\r'))
 		return captionEnter;
 
-	int n = tolower(key) - 'a';
+	int n = ::tolower(key) - 'a';
 	if (n < 0)
 		return "";
 	if (n >= CAPTION_MAX)
@@ -1297,7 +1461,7 @@ bool Option::getFlagModifiedCaption(char key)
 	if ((key == '\n') || (key == '\r'))
 		return flagModifiedCaptionEnter;
 
-	int n = tolower(key) - 'a';
+	int n = ::tolower(key) - 'a';
 	if (n < 0)
 		return false;
 	if (n >= CAPTION_MAX)
@@ -1315,7 +1479,7 @@ bool Option::getFlagModifiedCaption(char key)
 std::string Option::convertKeyToString(int key)
 {
 	char buf[31 + 1] = " ";
-	sprintf(buf, "%c", key);
+	::sprintf(buf, "%c", key);
 
 	return buf;
 }
@@ -1385,8 +1549,8 @@ std::string Option::escapeString(std::string str, bool flagEscapeSpace)
 
 void Option::usage(FILE *fp)
 {
-	fprintf(fp, gStringUsage, STRING_FILE_NAME_GAME);
-	fflush(fp);
+	::fprintf(fp, gStringUsage, STRING_FILE_NAME_GAME);
+	::fflush(fp);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1396,7 +1560,7 @@ void Option::usage(FILE *fp)
 
 void Option::version(FILE *fp)
 {
-	fprintf(fp, STRING_FORMAT_COPYRIGHT, LS_STRING_COPYRIGHT);
-	fflush(fp);
+	::fprintf(fp, STRING_FORMAT_COPYRIGHT, LS_STRING_COPYRIGHT);
+	::fflush(fp);
 }
 

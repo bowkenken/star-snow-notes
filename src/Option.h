@@ -158,6 +158,10 @@ private:
 	void loadGraphConfig();
 	void loadConfig(std::string path);
 	void loadConfigContents(ArgStrArray *argStr, FILE *fp);
+
+	bool loadConfigToken(std::string *str, FILE *fp);
+	char loadConfigEscapeChar(FILE *fp);
+
 	void transConfigStringToArgv(
 		int *argc, char ***argv, ArgStrArray *argStr);
 
