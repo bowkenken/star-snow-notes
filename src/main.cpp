@@ -397,22 +397,20 @@ void eventKey(bool flagDown, SDLKey key, SDLMod mod)
 	}
 
 	if (flagDown) {
-		if ((key >= SDLK_a) && (key <= SDLK_z)) {
+		if ((key == SDLK_s) && (mod & KMOD_CTRL)) {
+			gSetting->saveAllConfig();
+		} else if ((key >= SDLK_a) && (key <= SDLK_z)) {
 			char k = key - SDLK_a + 'a';
 			gMainSpace->bearFgStar(k);
-			return;
 		}
 		if (key == SDLK_SPACE) {
 			gMainSpace->bearFgStar(' ');
-			return;
 		}
 		if (key == SDLK_RETURN) {
 			gMainSpace->bearFgStar('\n');
-			return;
 		}
 		if (key == SDLK_SLASH) {
 			gMainSpace->toggleFlagAutoBear();
-			return;
 		}
 	}
 
