@@ -55,6 +55,9 @@ const double gReduceNum = 160.0;
 // 変数
 ////////////////////////////////////////////////////////////////
 
+// Z軸にもShiftキーを有効にするか？
+bool gDecelerateZFlag = false;
+
 long gScreenW = SCREEN_DEFAULT_W;
 long gScreenH = SCREEN_DEFAULT_H;
 
@@ -394,22 +397,20 @@ void eventKey(bool flagDown, SDLKey key, SDLMod mod)
 	}
 
 	if (flagDown) {
-		if ((key >= SDLK_a) && (key <= SDLK_z)) {
+		if ((key == SDLK_s) && (mod & KMOD_CTRL)) {
+			gSetting->saveAllConfig();
+		} else if ((key >= SDLK_a) && (key <= SDLK_z)) {
 			char k = key - SDLK_a + 'a';
 			gMainSpace->bearFgStar(k);
-			return;
 		}
 		if (key == SDLK_SPACE) {
 			gMainSpace->bearFgStar(' ');
-			return;
 		}
 		if (key == SDLK_RETURN) {
 			gMainSpace->bearFgStar('\n');
-			return;
 		}
 		if (key == SDLK_SLASH) {
 			gMainSpace->toggleFlagAutoBear();
-			return;
 		}
 	}
 
@@ -443,6 +444,8 @@ void eventKey(bool flagDown, SDLKey key, SDLMod mod)
 		ax = -1;
 		ay = -1;
 		az = -1;
+		if (!gDecelerateZFlag)
+			az = 0;
 		gMainSpace->decelerate(ax, ay, az);
 		flagSpeed = false;
 		break;
@@ -466,15 +469,25 @@ void eventKey(bool flagDown, SDLKey key, SDLMod mod)
 			flagMod = !flagMod;
 
 		if (flagMod) {
-			if (flagDown)
+			if (flagDown) {
 				gMainSpace->incSpeed(ax, ay, az);
-			else
+			} else {
 				gMainSpace->keepSpeed(ax, ay, az);
-		} else {
-			if (flagDown)
+			}
+		} else if (gDecelerateZFlag) {
+			if (flagDown) {
 				gMainSpace->accelerate(ax, ay, az);
-			else
+			} else {
 				gMainSpace->decelerate(ax, ay, az);
+			}
+		} else {
+			if (flagDown) {
+				gMainSpace->incSpeed(0, 0, az);
+				gMainSpace->accelerate(ax, ay, 0);
+			} else {
+				gMainSpace->keepSpeed(0, 0, az);
+				gMainSpace->decelerate(ax, ay, 0);
+			}
 		}
 	}
 }

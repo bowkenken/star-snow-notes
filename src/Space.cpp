@@ -249,10 +249,12 @@ void Space::initTexture()
 
 bool Space::bearFgStar(char starType)
 {
-	if (starType == '/')
+	if (starType == '/') {
 		starType = prevStarType;
-	else
+	} else {
 		prevStarType = starType;
+		setting->setKey(OPTION_IDX_AUTO_KEY, prevStarType);
+	}
 
 	long n = 0;
 	static long prevN = 0;
@@ -532,6 +534,10 @@ void Space::updateSpeed()
 		vz += -(::sgnDouble(vz) * spaceAZ * 0.5);
 
 	checkSpeedLimit();
+
+	setting->setNum(OPTION_IDX_X_SPEED, vx);
+	setting->setNum(OPTION_IDX_Y_SPEED, vy);
+	setting->setNum(OPTION_IDX_Z_SPEED, vz);
 }
 
 ////////////////////////////////////////////////////////////////
