@@ -249,10 +249,12 @@ void Space::initTexture()
 
 bool Space::bearFgStar(char starType)
 {
-	if (starType == '/')
+	if (starType == '/') {
 		starType = prevStarType;
-	else
+	} else {
 		prevStarType = starType;
+		setting->setKey(OPTION_IDX_AUTO_KEY, prevStarType);
+	}
 
 	long n = 0;
 	static long prevN = 0;
