@@ -1,0 +1,11 @@
+# Star Snow Notes
+# Common Config file
+# Program Ver.1.0.0
+# Config Ver.1.0.0
+
+# Chosen Graphic Directly
+"default"
+
+# Chosen Music Directly
+"default"
+
