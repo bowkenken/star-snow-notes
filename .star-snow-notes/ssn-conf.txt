@@ -4,8 +4,8 @@
 # Config Ver.1.0.0
 
 # Chosen Graphic Directly
-"default"
+"_default"
 
 # Chosen Music Directly
-"default"
+"_default"
 
