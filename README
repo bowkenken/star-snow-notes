@@ -1,44 +1,41 @@
-UNIX �ǤǤ���
+﻿UNIX 版です。
 
-**** ���󥹥ȡ�����ˡ ****
+**** インストール方法 ****
 
-1. ���̤��줿�ե��������ह�롣
-   (���Υե�����򸫤Ƥ���ʤ顢�⤦�Ѥ�Ǥ��ޤ���)
+1. 圧縮されたファイルを解凍する。
+   (このファイルを見ているなら、もう済んでいます。)
 
-  tar zxvf star-snow-notes-0.1.*.tar.gz
+  tar zxvf star-snow-notes-1.0.*.tar.gz
 
-2. ���ष���ǥ��쥯�ȥ������
+2. 解凍したディレクトリに入る
 
-  cd star-snow-notes-0.1.*
+  cd star-snow-notes-1.*.*
 
-3. root �ˤʤ롣
-  su -
+3. データをインストールする。
+  ./install-data.sh
 
-4. Make ���롣
+4. Make する。
 
   ./configure
   make
-  make install
+  su make install
 
-5. root ��̤��롣
-  exit
-
-6. �ޥ˥奢����ɤࡣ
+5. マニュアルを読む。
 
   man star-snow-notes
 
-7. �¹Ԥ��롣
+6. 実行する。
 
   star-snow-notes
 
-ư������å��ϲ����δĶ��ǹԤʤ��ޤ�����
+動作チェックは下記の環境で行ないました。
 
-Debian GNU Linux (squeeze)
+Debian GNU/Linux 7.7 (wheezy)
 
-���ޤ��Ԥ��ʤ��ä��鲼���ء���θ�ʤ�Ϣ����������
+うまく行かなかったら下記へ、遠慮なく連絡下さい。
 
 e-mail:
-bowkenken@users.sourceforge.jp
+bowkenken at users.sourceforge.jp
 
 web:
 http://star-snow-notes.sourceforge.jp/

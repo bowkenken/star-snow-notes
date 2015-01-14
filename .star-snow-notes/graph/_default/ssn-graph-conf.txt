@@ -1,0 +1,75 @@
+# Star Snow Notes
+# Graphic Config file
+# Program Ver.1.0.0
+# Config Ver.1.0.0
+
+# number of star
+--star-number 10240
+
+# flag of full screen
+--full-screen "false"
+
+# frame per second
+--fps 30
+
+# file of back ground
+--bg-file ""
+
+# frame of interval of auto inputed key
+--interval-auto 30
+
+# auto inputed key
+--auto-key ""
+
+# speed of the x-axis direction
+--x-speed 0.000000
+
+# speed of the y-axis direction
+--y-speed 0.000000
+
+# speed of the z-axis direction
+--z-speed 0.010000
+
+# flag of reversing x-axis
+--reverse-x "false"
+
+# flag of reversing y-axis
+--reverse-y "true"
+
+# flag of reversing z-axis
+--reverse-z "false"
+
+# flag of reversing shift key
+--reverse-shift "false"
+
+# captions of key
+caption-a="a:\nStar"
+caption-b="b:\nStar"
+caption-c="c:\nStar"
+caption-d="d:\nStar"
+caption-e="e:\nStar"
+caption-f="f:\nStar"
+caption-g="g:\nStar"
+caption-h="h:\nStar"
+caption-i="i:\nStar"
+caption-j="j:\nStar"
+caption-k="k:\nStar"
+caption-l="l:\nStar"
+caption-m="m:\nStar"
+caption-n="n:\nStar"
+caption-o="o:\nStar"
+caption-p="p:\nStar"
+caption-q="q:\nStar"
+caption-r="r:\nStar"
+caption-s="s:\nStar"
+caption-t="t:\nStar"
+caption-u="u:\nStar"
+caption-v="v:\nStar"
+caption-w="w:\nStar"
+caption-x="x:\nStar"
+caption-y="y:\nStar"
+caption-z="z:\nStar"
+
+caption-space="Space:\nRandom"
+caption-enter="Enter:\nRepeat"
+

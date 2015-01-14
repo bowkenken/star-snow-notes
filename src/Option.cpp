@@ -52,8 +52,8 @@ static const long OPTION_VERSION_PATCH = 0;
 // 変更履歴
 // 1.0.0 : 2014/10/13 Initial version
 
-static const char *DEFAULT_GRAPH_DIR = "default";
-static const char *DEFAULT_MUSIC_DIR = "default";
+static const char *DEFAULT_GRAPH_DIR = "_default";
+static const char *DEFAULT_MUSIC_DIR = "_default";
 
 static const char *COMMON_CONFIG_FILE = "ssn-conf.txt";
 static const char *GRAPH_CONFIG_FILE = "ssn-graph-conf.txt";
