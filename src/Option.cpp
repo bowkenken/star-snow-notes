@@ -499,6 +499,11 @@ void Option::mergeGraphConfig(Option *opt)
 
 	c = '\n';
 	mergeGraphConfigCaption(opt, c);
+
+	if (opt->flagModifiedGraphDir)
+		setGraphDir(opt->getGraphDir());
+	if (opt->flagModifiedMusicDir)
+		setMusicDir(opt->getMusicDir());
 }
 
 ////////////////////////////////////////////////////////////////
@@ -955,7 +960,7 @@ void Option::parseArg(int argc, char **argv, int optind)
 		if (p == NULL) {
 			argArray.push_back(argv[optind]);
 
-			//::fprintf(stderr, "parseArg [%s]\n", argv[optind]);
+			// ::fprintf(stderr, "parseArg [%s]\n", argv[optind]);
 		} else {
 			long len = p - argv[optind];
 			if (len <= 0)
@@ -968,7 +973,10 @@ void Option::parseArg(int argc, char **argv, int optind)
 
 			parseKeyValue(key, value);
 
-			//::fprintf(stderr, "parseArg [%s]\n", key.c_str());
+			// ::fprintf(stderr, "parseArg key[%s]\n",
+			// 	key.c_str());
+			// ::fprintf(stderr, "parseArg value[%s]\n",
+			// 	value.c_str());
 		}
 	}
 
