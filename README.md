@@ -7,9 +7,9 @@ Various heavenly bodies can be called with the mouse or keystroke.
 
 1. Uncompress the package file.
    (If you can watch this file, you have already finished it.)
-  - tar zxvf star-snow-notes-1.0.*.tar.gz
+  - tar zxvf star-snow-notes-1.?.?.tar.gz
 2. Enter the directory of uncompressed package.
-  - cd star-snow-notes-1.*.*
+  - cd star-snow-notes-1.?.?
 3. Install data.
   - ./install-data.sh
 4. Do make.
