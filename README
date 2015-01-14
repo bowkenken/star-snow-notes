@@ -5,40 +5,37 @@ UNIX 版です。
 1. 圧縮されたファイルを解凍する。
    (このファイルを見ているなら、もう済んでいます。)
 
-  tar zxvf star-snow-notes-0.1.*.tar.gz
+  tar zxvf star-snow-notes-1.0.*.tar.gz
 
 2. 解凍したディレクトリに入る
 
-  cd star-snow-notes-0.1.*
+  cd star-snow-notes-1.*.*
 
-3. root になる。
-  su -
+3. データをインストールする。
+  ./install-data.sh
 
 4. Make する。
 
   ./configure
   make
-  make install
+  su make install
 
-5. root をぬける。
-  exit
-
-6. マニュアルを読む。
+5. マニュアルを読む。
 
   man star-snow-notes
 
-7. 実行する。
+6. 実行する。
 
   star-snow-notes
 
 動作チェックは下記の環境で行ないました。
 
-Debian GNU Linux (squeeze)
+Debian GNU/Linux 7.7 (wheezy)
 
 うまく行かなかったら下記へ、遠慮なく連絡下さい。
 
 e-mail:
-bowkenken@users.sourceforge.jp
+bowkenken at users.sourceforge.jp
 
 web:
 http://star-snow-notes.sourceforge.jp/
