@@ -616,11 +616,11 @@ void Option::saveCommonConfigContents(FILE *fp)
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Graphic Directly\n");
-	printfConfig(fp, "%s\n", quoteString(getGraphDir()).c_str());
+	printfConfig(fp, "graph=%s\n", quoteString(getGraphDir()).c_str());
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Music Directly\n");
-	printfConfig(fp, "%s\n", quoteString(getMusicDir()).c_str());
+	printfConfig(fp, "music=%s\n", quoteString(getMusicDir()).c_str());
 	printfConfig(fp, "\n");
 }
 
