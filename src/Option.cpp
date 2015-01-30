@@ -1298,7 +1298,11 @@ void Option::setCaption(char key, const std::string &str)
 
 void Option::setGraphDir(const std::string &dir)
 {
-	graphDir = dir;
+	if ((dir == ".") || (dir == ".."))
+		graphDir = DEFAULT_GRAPH_DIR;
+	else
+		graphDir = dir;
+
 	flagModifiedGraphDir = true;
 }
 
@@ -1309,7 +1313,11 @@ void Option::setGraphDir(const std::string &dir)
 
 void Option::setMusicDir(const std::string &dir)
 {
-	musicDir = dir;
+	if ((dir == ".") || (dir == ".."))
+		musicDir = DEFAULT_MUSIC_DIR;
+	else
+		musicDir = dir;
+
 	flagModifiedMusicDir = true;
 }
 
