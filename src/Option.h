@@ -190,9 +190,17 @@ private:
 	void parseKeyValue(
 		const std::string &key, const std::string &value);
 
+	bool parseResetString(const char *optarg);
+	bool parseResetFile(const char *optarg);
 	bool parseFlag(const char *optarg);
 	double parseNum(const char *optarg);
 	char parseChar(const char *optarg);
+
+	bool getFlagDefault(OptionIdx idx);
+	double getNumDefault(OptionIdx idx);
+	std::string getKeyStringDefault(OptionIdx idx);
+	int getKeyDefault(OptionIdx idx);
+	std::string getFileDefault(OptionIdx idx);
 
 	// void setFlag(OptionIdx idx, bool flag);
 	// void setNum(OptionIdx idx, double num);
