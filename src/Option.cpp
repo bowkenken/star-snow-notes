@@ -303,10 +303,10 @@ void Option::loadConfigContents(ArgStrArray *argStr, FILE *fp)
 
 		argStr->push_back(str);
 
-		//::fprintf(stderr, "cmd line [%s]\n", str.c_str());
+		// ::fprintf(stderr, "cmd line [%s]\n", str.c_str());
 	}
 
-	//::fprintf(stderr, "\n");
+	// ::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -451,7 +451,7 @@ void Option::transConfigStringToArgv(
 	char *sDst = (char *)calloc(argLen, sizeof(char *));
 	strcpy(sDst, sSrc);
 
-	//::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
+	// ::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
 
 	(*argv)[i] = sDst;
 	(*argc)++;
@@ -469,14 +469,14 @@ void Option::transConfigStringToArgv(
 		char *sDst = (char *)calloc(argLen, sizeof(char *));
 		strcpy(sDst, sSrc);
 
-		//::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
+		// ::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
 
 		(*argv)[i] = sDst;
 		(*argc)++;
 		i++;
 	}
 
-	//::fprintf(stderr, "\n");
+	// ::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -819,7 +819,7 @@ std::string Option::getCommonConfigPath()
 	std::string path = "";
 	path = FileList::jointDir( FileList::getHomeDir(), STR_DIR_BASE );
 	path = FileList::jointDir( path, COMMON_CONFIG_FILE );
-	//::fprintf(stderr, "[common option file path=%s]\n", path.c_str());
+	// ::fprintf(stderr, "[common option file path=%s]\n", path.c_str());
 
 	return path;
 }
@@ -856,12 +856,14 @@ void Option::parseOption(int argc, char **argv)
 	long	optind = argc;
 #endif	// !defined(HAVE_GETOPT) && !defined(HAVE_GETOPT_LONG)
 
-	::fprintf(stderr, "parseOption begin\n");
+	// ::fprintf(stderr, "\nparseOption begin\n");
 
 	if (argv == NULL)
 		return;
 
-	::fprintf(stderr, "argc: %d, argv:%p\n", argc, argv);
+	// ::fprintf(stderr, "argc: %d, argv:%p\n", argc, argv);
+
+	optind = 0;
 
 	while (1) {
 		int	c;
@@ -886,11 +888,13 @@ void Option::parseOption(int argc, char **argv)
 			continue;
 #endif	// HAVE_GETOPT_LONG
 
-		if (c <= -1)
+		//@@@ if (c <= -1)
+		//@@@ 	break;
+		if (c < ' ')
 			break;
 
-		//::fprintf(stderr, "parseOption [-%c][%s]\n",
-		//	(char)c, optarg);
+		// ::fprintf(stderr, "parseOption [-%c:%04x][%s]\n",
+		// 	(char)c, (int)c, optarg);
 
 		enum OptionIdx idx = OPTION_IDX_MAX;
 
@@ -947,9 +951,6 @@ void Option::parseOption(int argc, char **argv)
 			break;
 		}
 
-		fprintf(stderr, "opt [%c:%04x], optarg [%s]\n",
-			(int)c, (int)c, optarg);
-
 		switch (c) {
 		case 'i':
 			setFlag(OPTION_IDX_INIT, true);
@@ -962,8 +963,6 @@ void Option::parseOption(int argc, char **argv)
 				setFlag(idx, parseFlag(optarg));
 			break;
 		case 'n':
-fprintf(stderr, "opt -n [%c:%04x], optarg [%s]\n",
-(int)c, (int)c, optarg);//@@@
 		case 'F':
 		case 'A':
 			if (parseResetString(optarg))
@@ -1022,8 +1021,8 @@ fprintf(stderr, "opt -n [%c:%04x], optarg [%s]\n",
 
 	parseArg(argc, argv, optind);
 
-	//::fprintf(stderr, "parseOption end\n");
-	//::fprintf(stderr, "\n");
+	// ::fprintf(stderr, "parseOption end\n");
+	// ::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1061,6 +1060,7 @@ void Option::parseArg(int argc, char **argv, int optind)
 	}
 
 	long size = argArray.size();
+	// ::fprintf(stderr, "argArray.size [%ld]\n", (long)size);
 
 	if (size > ARG_ARRAY_IDX_MAX) {
 		usage(stderr);
