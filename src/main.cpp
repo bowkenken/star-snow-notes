@@ -162,10 +162,15 @@ static void initScreen(int *argc, char **argv)
 
 	::SDL_WM_SetCaption("Star Snow Notes", NULL);
 
+	int bitsFullScreen = 0;
+	if (gSetting->getFlag(OPTION_IDX_FULL_SCREEN))
+		bitsFullScreen = SDL_FULLSCREEN;
+
 	::SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	long bpp = vInfo->vfmt->BitsPerPixel;
 	SDL_Surface *screenSf = ::SDL_SetVideoMode(
-		gScreenW, gScreenH, bpp, SDL_OPENGL);
+		gScreenW, gScreenH, bpp,
+		(SDL_OPENGL | bitsFullScreen));
 	if (screenSf == NULL) {
 		fprintf(stderr, "Error: Initialize Screen: %s\n",
 			::SDL_GetError());
@@ -397,8 +402,20 @@ void eventKey(bool flagDown, SDLKey key, SDLMod mod)
 	}
 
 	if (flagDown) {
-		if ((key == SDLK_s) && (mod & KMOD_CTRL)) {
-			gSetting->saveAllConfig();
+		if (mod & KMOD_CTRL) {
+			if (key == SDLK_s) {
+				gSetting->saveAllConfig();
+			} else if (key == SDLK_LEFTBRACKET) {
+				exitGame(EXIT_SUCCESS);
+			} else if (key == SDLK_q) {
+				exitGame(EXIT_SUCCESS);
+			} else if (key == SDLK_w) {
+				exitGame(EXIT_SUCCESS);
+			}
+		} else if (key == SDLK_ESCAPE) {
+			exitGame(EXIT_SUCCESS);
+		} else if (key == SDLK_CARET) {
+			SDL_WM_ToggleFullScreen(SDL_GetVideoSurface());
 		} else if ((key >= SDLK_a) && (key <= SDLK_z)) {
 			char k = key - SDLK_a + 'a';
 			gMainSpace->bearFgStar(k);
