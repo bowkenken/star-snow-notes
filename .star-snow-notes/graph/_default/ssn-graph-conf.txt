@@ -6,6 +6,12 @@
 # number of star
 --star-number 10240
 
+# screen width
+--width 960
+
+# screen height
+--height 540
+
 # flag of full screen
 --full-screen "false"
 
