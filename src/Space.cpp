@@ -144,7 +144,9 @@ void Space::init(Option *opt)
 	for (long i = 0; i < bgStarMaxNum; ++i)
 		bearBgStar();
 
-	reshape(640, 480);
+	reshape(
+		setting->getNum(OPTION_IDX_WIDTH),
+		setting->getNum(OPTION_IDX_HEIGHT));
 
 	::glMatrixMode(GL_MODELVIEW);
 	::glLoadIdentity();
@@ -718,6 +720,7 @@ void Space::draw()
 	double bgx = x * 640.0 * 4;
 	double bgy = y * 640.0 * 4;
 	double bgz = (z * 640.0 + 640.0);
+
 	::glBegin(GL_QUADS);
 	::glTexCoord2d(0.0, 0.0);
 	::glVertex3d(bgx + bgw, bgy + bgh, bgz);
@@ -754,7 +757,22 @@ void Space::reshape(long w, long h)
 	::glMatrixMode(GL_PROJECTION);
 	::glLoadIdentity();
 
-	::gluPerspective(480.0, (double)w / (double)h, 1.0, 640.0 + 1.0);
+	double l, r, b, t;
+	double n = 1.0;
+	double f = 640.0 + 1.0;
+	if (((double)w / (double)h) < (640.0 / 480.0)) {
+		b = -2.0;
+		t = +2.0;
+		l = (b / h) * w;
+		r = (t / h) * w;
+	} else {
+		l = -2.0;
+		r = +2.0;
+		b = (l / w) * h;
+		t = (r / w) * h;
+	}
+
+	::glFrustum(l, r, b, t, n, f);
 
 	::glMatrixMode(GL_MODELVIEW);
 }

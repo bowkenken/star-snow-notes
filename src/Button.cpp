@@ -265,7 +265,7 @@ void Button::reshape(long x, long y, long w, long h)
 	// 表示上のウィンドウ座標に変換
 
 	double ox, oy, oz, ow, oh;
-	::transWin2ObjPos(x, y, width, height, &ox, &oy, &oz, &ow, &oh);
+	::transWin2ObjPos(x, y, w, h, &ox, &oy, &oz, &ow, &oh);
 
 	::projectWindowPosition(
 		ox, oy, oz,

@@ -90,8 +90,8 @@ void ControlPanel::init(Option *opt)
 	flagFreezed = true;
 	flagDrawAllStarButton = true;
 
-	screenWidth = defaultScreenWidth;
-	screenHeight = defaultScreenHeight;
+	screenWidth = setting->getNum(OPTION_IDX_WIDTH);
+	screenHeight = setting->getNum(OPTION_IDX_HEIGHT);
 
 	for (long i = MouseButtonLeft; i < MouseButtonMax; i++)
 		flagMouseButton[i] = false;
@@ -174,17 +174,17 @@ void ControlPanel::reshape(long w, long h)
 		sx = sw * (i % gridHorizontalNum);
 		sy = sh * (i / gridHorizontalNum);
 
-		starButtonArray[i]->reshape(sx, sy, sw - 2, sh - 2);
+		starButtonArray[i]->reshape(sx + 1, sy + 1, sw - 2, sh - 2);
 	}
 
 	sx = sw * (i % gridHorizontalNum);
 	sy = sh * (i / gridHorizontalNum);
-	starButtonSpace->reshape(sx, sy, sw - 2, sh - 2);
+	starButtonSpace->reshape(sx + 1, sy + 1, sw - 2, sh - 2);
 	i++;
 
 	sx = sw * (i % gridHorizontalNum);
 	sy = sh * (i / gridHorizontalNum);
-	starButtonEnter->reshape(sx, sy, sw - 2, sh - 2);
+	starButtonEnter->reshape(sx + 1, sy + 1, sw - 2, sh - 2);
 	i++;
 
 	// 表示上のウィンドウ座標に変換
