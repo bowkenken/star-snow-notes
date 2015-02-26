@@ -58,13 +58,16 @@ static const char *DEFAULT_MUSIC_DIR = "_default";
 static const char *COMMON_CONFIG_FILE = "ssn-conf.txt";
 static const char *GRAPH_CONFIG_FILE = "ssn-graph-conf.txt";
 
-static const char gStringOption[] = "is:n:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
+static const char gStringOption[]
+	= "is:n:W:H:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
 
 #ifdef	HAVE_GETOPT_LONG
 static const struct option	gLongOption[] = {
 	{ "init",           no_argument,       NULL, 'i' },
 	{ "save",           required_argument, NULL, 's' },
 	{ "star-number",    required_argument, NULL, 'n' },
+	{ "width",          required_argument, NULL, 'W' },
+	{ "height",         required_argument, NULL, 'H' },
 	{ "full-screen",    required_argument, NULL, 'f' },
 	{ "fps",            required_argument, NULL, 'F' },
 	{ "bg-file",        required_argument, NULL, 'b' },
@@ -94,6 +97,8 @@ static const char	gStringUsage[] = {
 	"  -i, --init                initialize settings\n"
 	"  -s, --save=FLAG           save settings\n"
 	"  -n, --star-number=NUM     set BG star number\n"
+	"  -W, --width=NUM           set screen width\n"
+	"  -H, --height=NUM          set screen height\n"
 	"  -f, --full-screen=FLAG    set full screen mode\n"
 	"  -F, --fps=NUM             set frame per second\n"
 	"  -b, --bg-file=FILE        select BG file\n"
@@ -150,6 +155,8 @@ void Option::init()
 	OptionTypeArray[OPTION_IDX_INIT] = OPTION_TYPE_FLAG;
 	OptionTypeArray[OPTION_IDX_SAVE] = OPTION_TYPE_FLAG;
 	OptionTypeArray[OPTION_IDX_STAR_NUMBER] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_WIDTH] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_HEIGHT] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_FULL_SCREEN] = OPTION_TYPE_FLAG;
 	OptionTypeArray[OPTION_IDX_FPS] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_BG_FILE] = OPTION_TYPE_FILE;
@@ -166,6 +173,8 @@ void Option::init()
 	setFlag(OPTION_IDX_INIT, false);
 	setFlag(OPTION_IDX_SAVE, false);
 	setNum(OPTION_IDX_STAR_NUMBER, 10240);
+	setNum(OPTION_IDX_WIDTH, 1920 / 2);
+	setNum(OPTION_IDX_HEIGHT, 1080 / 2);
 	setFlag(OPTION_IDX_FULL_SCREEN, false);
 	setNum(OPTION_IDX_FPS, 30);
 	setFile(OPTION_IDX_BG_FILE, "");
@@ -662,6 +671,16 @@ void Option::saveGraphConfigContents(FILE *fp)
 		(long)getNum(OPTION_IDX_STAR_NUMBER));
 	printfConfig(fp, "\n");
 
+	printfConfig(fp, "# screen width\n");
+	printfConfig(fp, "--width %ld\n",
+		(long)getNum(OPTION_IDX_WIDTH));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# screen height\n");
+	printfConfig(fp, "--height %ld\n",
+		(long)getNum(OPTION_IDX_HEIGHT));
+	printfConfig(fp, "\n");
+
 	printfConfig(fp, "# flag of full screen\n");
 	printfConfig(fp, "--full-screen %s\n",
 		quoteString(getFlagString(OPTION_IDX_FULL_SCREEN)).c_str());
@@ -883,6 +902,12 @@ void Option::parseOption(int argc, char **argv)
 			break;
 		case 'n':
 			setNum(OPTION_IDX_STAR_NUMBER, parseNum(optarg));
+			break;
+		case 'W':
+			setNum(OPTION_IDX_WIDTH, parseNum(optarg));
+			break;
+		case 'H':
+			setNum(OPTION_IDX_HEIGHT, parseNum(optarg));
 			break;
 		case 'f':
 			setFlag(OPTION_IDX_FULL_SCREEN, parseFlag(optarg));

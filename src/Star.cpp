@@ -100,6 +100,7 @@ bool Star::draw(double r)
 	double x = this->x * 640.0 * 4;
 	double y = this->y * 640.0 * 4;
 	double z = this->z * 640.0;
+
 	::glBegin(GL_QUADS);
 	::glTexCoord2d(0.0, 0.0);
 	::glVertex3d(x + r, y + r, z);

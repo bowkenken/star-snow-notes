@@ -42,14 +42,7 @@ using namespace StarSnowNotes;
 // 定数
 ////////////////////////////////////////////////////////////////
 
-const long SCREEN_DEFAULT_W = 640;
-const long SCREEN_DEFAULT_H = 480;
-
-// 描画時の基準画面サイズ
-static const long gBaseScreenWidth = 640;
-static const long gBaseScreenHeight = 480;
-
-const double gReduceNum = 160.0;
+const double gReduceNum = 640.0;
 
 ////////////////////////////////////////////////////////////////
 // 変数
@@ -57,9 +50,6 @@ const double gReduceNum = 160.0;
 
 // Z軸にもShiftキーを有効にするか？
 bool gDecelerateZFlag = false;
-
-long gScreenW = SCREEN_DEFAULT_W;
-long gScreenH = SCREEN_DEFAULT_H;
 
 Option *gOption, *gSetting;
 Space *gMainSpace;
@@ -130,8 +120,12 @@ int main(int argc, char **argv)
 	Button::setColorRect(Button::COLOR_IDX_PRESSED,
 		r / 2, g / 2, b / 2, a / 2);
 
-	gMainSpace->reshape(gScreenW, gScreenH);
-	gMainControlPanel->reshape(gScreenW, gScreenH);
+	gMainSpace->reshape(
+		gSetting->getNum(OPTION_IDX_WIDTH),
+		gSetting->getNum(OPTION_IDX_HEIGHT));
+	gMainControlPanel->reshape(
+		gSetting->getNum(OPTION_IDX_WIDTH),
+		gSetting->getNum(OPTION_IDX_HEIGHT));
 
 	::mainLoop();
 
@@ -167,9 +161,12 @@ static void initScreen(int *argc, char **argv)
 		bitsFullScreen = SDL_FULLSCREEN;
 
 	::SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	long w = gSetting->getNum(OPTION_IDX_WIDTH);
+	long h = gSetting->getNum(OPTION_IDX_HEIGHT);
 	long bpp = vInfo->vfmt->BitsPerPixel;
 	SDL_Surface *screenSf = ::SDL_SetVideoMode(
-		gScreenW, gScreenH, bpp,
+		w, h, bpp,
 		(SDL_OPENGL | bitsFullScreen));
 	if (screenSf == NULL) {
 		fprintf(stderr, "Error: Initialize Screen: %s\n",
@@ -178,7 +175,7 @@ static void initScreen(int *argc, char **argv)
 	}
 
 	::glClearColor(0.0, 0.0, 0.0, 1.0);
-	::glOrtho(0.0, gScreenW, gScreenH, 0.0, -1.0, 1.0);
+	::glOrtho(0.0, w, h, 0.0, -1.0, 1.0);
 	::glEnable(GL_DEPTH);
 	::glEnable(GL_TEXTURE_2D);
 }
@@ -535,11 +532,43 @@ void transWin2ObjPos(
 	long wx, long wy, long ww, long wh,
 	double *ox, double *oy, double *oz, double *ow, double *oh)
 {
-	*ox = -(double)(wx - (gBaseScreenWidth / 2)) / gReduceNum;
-	*oy = -(double)(wy - (gBaseScreenHeight / 2)) / gReduceNum;
-	*oz = 1.0;
-	*ow = -(double)(ww) / gReduceNum;
-	*oh = -(double)(wh) / gReduceNum;
+	wy = gSetting->getNum(OPTION_IDX_HEIGHT) - wy;
+	wh = -wh;
+	GLdouble wz = 1.0;
+
+	GLdouble modelview[16];
+	::glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+	GLdouble projection[16];
+	::glGetDoublev(GL_PROJECTION_MATRIX, projection);
+	GLint viewport[4];
+	::glGetIntegerv(GL_VIEWPORT, viewport);
+
+	GLdouble x1, y1, z1;
+	glReadPixels(wx, wy, 1, 1,
+		GL_DEPTH_COMPONENT, GL_DOUBLE, &wz);
+	::gluUnProject(
+		wx, wy, wz,
+		modelview, projection, viewport,
+		&x1, &y1, &z1);
+
+	GLdouble x2, y2, z2;
+	glReadPixels(wx + ww, wy + wh, 1, 1,
+		GL_DEPTH_COMPONENT, GL_DOUBLE, &wz);
+	::gluUnProject(
+		wx + ww, wy + wh, wz,
+		modelview, projection, viewport,
+		&x2, &y2, &z2);
+
+	*ox = x1;
+	*oy = y1;
+	*oz = wz;
+	*ow = x2 - x1;
+	*oh = y2 - y1;
+
+	*ox /= gReduceNum;
+	*oy /= gReduceNum;
+	*ow /= gReduceNum;
+	*oh /= gReduceNum;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -548,7 +577,19 @@ void transWin2ObjPos(
 
 void transWin2ObjLineWidth(long wlw, double *olw)
 {
-	*olw = (double)wlw / (double)gBaseScreenWidth / gReduceNum;
+	long wx = 0.0;
+	long wy = 0.0;
+	long ww = wlw;
+	long wh = 0.0;
+	double ox = 0.0;
+	double oy = 0.0;
+	double oz = 0.0;
+	double ow = 0.0;
+	double oh = 0.0;
+
+	::transWin2ObjPos(wx, wy, ww, wh, &ox, &oy, &oz, &ow, &oh);
+
+	*olw = ow;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -567,11 +608,13 @@ void projectWindowPosition(
 	::glGetIntegerv(GL_VIEWPORT, viewport);
 
 	GLdouble winX, winY, winZ;
-	::gluProject(x, y, z, modelview, projection, viewport,
+	::gluProject(
+		x, y, z,
+		modelview, projection, viewport,
 		&winX, &winY, &winZ);
 
 	*wx = (long)winX;
-	*wy = gScreenH - (long)winY;
+	*wy = gSetting->getNum(OPTION_IDX_HEIGHT) - (long)winY;
 	*wz = (long)winZ;
 }
 
