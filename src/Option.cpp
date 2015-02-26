@@ -163,21 +163,36 @@ void Option::init()
 	OptionTypeArray[OPTION_IDX_REVERSE_Z] = OPTION_TYPE_FLAG;
 	OptionTypeArray[OPTION_IDX_REVERSE_SHIFT] = OPTION_TYPE_FLAG;
 
-	setFlag(OPTION_IDX_INIT, false);
-	setFlag(OPTION_IDX_SAVE, false);
-	setNum(OPTION_IDX_STAR_NUMBER, 10240);
-	setFlag(OPTION_IDX_FULL_SCREEN, false);
-	setNum(OPTION_IDX_FPS, 30);
-	setFile(OPTION_IDX_BG_FILE, "");
-	setNum(OPTION_IDX_INTERVAL_AUTO, 30);
-	setKey(OPTION_IDX_AUTO_KEY, '\0');
-	setNum(OPTION_IDX_X_SPEED, +0.0);
-	setNum(OPTION_IDX_Y_SPEED, +0.0);
-	setNum(OPTION_IDX_Z_SPEED, +0.01);
-	setFlag(OPTION_IDX_REVERSE_X, false);
-	setFlag(OPTION_IDX_REVERSE_Y, true);
-	setFlag(OPTION_IDX_REVERSE_Z, false);
-	setFlag(OPTION_IDX_REVERSE_SHIFT, false);
+	setFlag(OPTION_IDX_INIT,
+		getFlagDefault(OPTION_IDX_INIT));
+	setFlag(OPTION_IDX_SAVE,
+		getFlagDefault(OPTION_IDX_SAVE));
+	setNum(OPTION_IDX_STAR_NUMBER,
+		getNumDefault(OPTION_IDX_STAR_NUMBER));
+	setFlag(OPTION_IDX_FULL_SCREEN,
+		getFlagDefault(OPTION_IDX_FULL_SCREEN));
+	setNum(OPTION_IDX_FPS,
+		getNumDefault(OPTION_IDX_FPS));
+	setFile(OPTION_IDX_BG_FILE,
+		getFileDefault(OPTION_IDX_BG_FILE));
+	setNum(OPTION_IDX_INTERVAL_AUTO,
+		getNumDefault(OPTION_IDX_INTERVAL_AUTO));
+	setKey(OPTION_IDX_AUTO_KEY,
+		getKeyDefault(OPTION_IDX_AUTO_KEY));
+	setNum(OPTION_IDX_X_SPEED,
+		getNumDefault(OPTION_IDX_X_SPEED));
+	setNum(OPTION_IDX_Y_SPEED,
+		getNumDefault(OPTION_IDX_Y_SPEED));
+	setNum(OPTION_IDX_Z_SPEED,
+		getNumDefault(OPTION_IDX_Z_SPEED));
+	setFlag(OPTION_IDX_REVERSE_X,
+		getFlagDefault(OPTION_IDX_REVERSE_X));
+	setFlag(OPTION_IDX_REVERSE_Y,
+		getFlagDefault(OPTION_IDX_REVERSE_Y));
+	setFlag(OPTION_IDX_REVERSE_Z,
+		getFlagDefault(OPTION_IDX_REVERSE_Z));
+	setFlag(OPTION_IDX_REVERSE_SHIFT,
+		getFlagDefault(OPTION_IDX_REVERSE_SHIFT));
 
 	for (char c = 'a'; c <= 'z'; c++) {
 		char str[128 + 1];
@@ -262,6 +277,9 @@ void Option::loadConfig(std::string path)
 	char **argv;
 	transConfigStringToArgv(&argc, &argv, &argStr);
 
+	// for (int i = 0; i < argc; i++)
+	// 	fprintf(stderr, "argv[%d] = [%s]\n", i, argv[i]);
+
 	// 引数として解析
 
 	parseOption(argc, argv);
@@ -285,10 +303,10 @@ void Option::loadConfigContents(ArgStrArray *argStr, FILE *fp)
 
 		argStr->push_back(str);
 
-		//::fprintf(stderr, "cmd line [%s]\n", str.c_str());
+		// ::fprintf(stderr, "cmd line [%s]\n", str.c_str());
 	}
 
-	//::fprintf(stderr, "\n");
+	// ::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -433,7 +451,7 @@ void Option::transConfigStringToArgv(
 	char *sDst = (char *)calloc(argLen, sizeof(char *));
 	strcpy(sDst, sSrc);
 
-	//::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
+	// ::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
 
 	(*argv)[i] = sDst;
 	(*argc)++;
@@ -451,14 +469,14 @@ void Option::transConfigStringToArgv(
 		char *sDst = (char *)calloc(argLen, sizeof(char *));
 		strcpy(sDst, sSrc);
 
-		//::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
+		// ::fprintf(stderr, "argv %3d[%s]\n", *argc, sDst);
 
 		(*argv)[i] = sDst;
 		(*argc)++;
 		i++;
 	}
 
-	//::fprintf(stderr, "\n");
+	// ::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -616,11 +634,11 @@ void Option::saveCommonConfigContents(FILE *fp)
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Graphic Directly\n");
-	printfConfig(fp, "%s\n", quoteString(getGraphDir()).c_str());
+	printfConfig(fp, "graph=%s\n", quoteString(getGraphDir()).c_str());
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# Chosen Music Directly\n");
-	printfConfig(fp, "%s\n", quoteString(getMusicDir()).c_str());
+	printfConfig(fp, "music=%s\n", quoteString(getMusicDir()).c_str());
 	printfConfig(fp, "\n");
 }
 
@@ -801,7 +819,7 @@ std::string Option::getCommonConfigPath()
 	std::string path = "";
 	path = FileList::jointDir( FileList::getHomeDir(), STR_DIR_BASE );
 	path = FileList::jointDir( path, COMMON_CONFIG_FILE );
-	//::fprintf(stderr, "[common option file path=%s]\n", path.c_str());
+	// ::fprintf(stderr, "[common option file path=%s]\n", path.c_str());
 
 	return path;
 }
@@ -838,15 +856,17 @@ void Option::parseOption(int argc, char **argv)
 	long	optind = argc;
 #endif	// !defined(HAVE_GETOPT) && !defined(HAVE_GETOPT_LONG)
 
-	//::fprintf(stderr, "parseOption begin\n");
+	// ::fprintf(stderr, "\nparseOption begin\n");
 
 	if (argv == NULL)
 		return;
 
-	//::fprintf(stderr, "argc: %d, argv:%p\n", argc, argv);
+	// ::fprintf(stderr, "argc: %d, argv:%p\n", argc, argv);
+
+	optind = 0;
 
 	while (1) {
-		long	c;
+		int	c;
 #ifdef	HAVE_GETOPT_LONG
 		int	optIdx;
 #endif	// HAVE_GETOPT_LONG
@@ -868,57 +888,116 @@ void Option::parseOption(int argc, char **argv)
 			continue;
 #endif	// HAVE_GETOPT_LONG
 
-		if (c <= -1)
+		//@@@ if (c <= -1)
+		//@@@ 	break;
+		if (c < ' ')
 			break;
 
-		//::fprintf(stderr, "parseOption [-%c][%s]\n",
-		//	(char)c, optarg);
+		// ::fprintf(stderr, "parseOption [-%c:%04x][%s]\n",
+		// 	(char)c, (int)c, optarg);
+
+		enum OptionIdx idx = OPTION_IDX_MAX;
+
+		switch (c) {
+		case 'i':
+			idx = OPTION_IDX_INIT;
+			break;
+		case 's':
+			idx = OPTION_IDX_SAVE;
+			break;
+		case 'n':
+			idx = OPTION_IDX_STAR_NUMBER;
+			break;
+		case 'f':
+			idx = OPTION_IDX_FULL_SCREEN;
+			break;
+		case 'F':
+			idx = OPTION_IDX_FPS;
+			break;
+		case 'b':
+			idx = OPTION_IDX_BG_FILE;
+			break;
+		case 'A':
+			idx = OPTION_IDX_INTERVAL_AUTO;
+			break;
+		case 'a':
+			idx = OPTION_IDX_AUTO_KEY;
+			break;
+		case 'x':
+			idx = OPTION_IDX_X_SPEED;
+			break;
+		case 'y':
+			idx = OPTION_IDX_Y_SPEED;
+			break;
+		case 'z':
+			idx = OPTION_IDX_Z_SPEED;
+			break;
+		case 'X':
+			idx = OPTION_IDX_REVERSE_X;
+			break;
+		case 'Y':
+			idx = OPTION_IDX_REVERSE_Y;
+			break;
+		case 'Z':
+			idx = OPTION_IDX_REVERSE_Z;
+			break;
+		case 'R':
+			idx = OPTION_IDX_REVERSE_SHIFT;
+			break;
+		case 'V':
+		case 'v':
+		case 'h':
+		default:
+			break;
+		}
 
 		switch (c) {
 		case 'i':
 			setFlag(OPTION_IDX_INIT, true);
 			break;
 		case 's':
-			setFlag(OPTION_IDX_SAVE, parseFlag(optarg));
+		case 'f':
+			if (parseResetString(optarg))
+				setFlag(idx, getFlagDefault(idx));
+			else
+				setFlag(idx, parseFlag(optarg));
 			break;
 		case 'n':
-			setNum(OPTION_IDX_STAR_NUMBER, parseNum(optarg));
-			break;
-		case 'f':
-			setFlag(OPTION_IDX_FULL_SCREEN, parseFlag(optarg));
-			break;
 		case 'F':
-			setNum(OPTION_IDX_FPS, parseNum(optarg));
+		case 'A':
+			if (parseResetString(optarg))
+				setNum(idx, getNumDefault(idx));
+			else
+				setNum(idx, parseNum(optarg));
 			break;
 		case 'b':
-			setFile(OPTION_IDX_BG_FILE, optarg);
-			break;
-		case 'A':
-			setNum(OPTION_IDX_INTERVAL_AUTO, parseNum(optarg));
+			if (parseResetFile(optarg))
+				setFile(idx, getFileDefault(idx));
+			else
+				setFile(idx, optarg);
 			break;
 		case 'a':
-			setKey(OPTION_IDX_AUTO_KEY, parseChar(optarg));
+			if (parseResetString(optarg))
+				setKey(idx, getKeyDefault(idx));
+			else
+				setKey(idx, parseChar(optarg));
 			break;
 		case 'x':
-			setNum(OPTION_IDX_X_SPEED, parseNum(optarg));
-			break;
 		case 'y':
-			setNum(OPTION_IDX_Y_SPEED, parseNum(optarg));
-			break;
 		case 'z':
-			setNum(OPTION_IDX_Z_SPEED, parseNum(optarg));
+			if (parseResetString(optarg))
+				setNum(idx, getNumDefault(idx));
+			else
+				setNum(idx, parseNum(optarg));
 			break;
 		case 'X':
-			setFlag(OPTION_IDX_REVERSE_X, parseFlag(optarg));
-			break;
 		case 'Y':
-			setFlag(OPTION_IDX_REVERSE_Y, parseFlag(optarg));
-			break;
 		case 'Z':
-			setFlag(OPTION_IDX_REVERSE_Z, parseFlag(optarg));
-			break;
 		case 'R':
-			setFlag(OPTION_IDX_REVERSE_SHIFT, parseFlag(optarg));
+			if (parseResetString(optarg))
+				setFlag(idx, getFlagDefault(idx));
+			else
+				setFlag(idx, parseFlag(optarg));
 			break;
 		case 'V':
 		case 'v':
@@ -942,8 +1021,8 @@ void Option::parseOption(int argc, char **argv)
 
 	parseArg(argc, argv, optind);
 
-	//::fprintf(stderr, "parseOption end\n");
-	//::fprintf(stderr, "\n");
+	// ::fprintf(stderr, "parseOption end\n");
+	// ::fprintf(stderr, "\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -981,6 +1060,7 @@ void Option::parseArg(int argc, char **argv, int optind)
 	}
 
 	long size = argArray.size();
+	// ::fprintf(stderr, "argArray.size [%ld]\n", (long)size);
 
 	if (size > ARG_ARRAY_IDX_MAX) {
 		usage(stderr);
@@ -1047,6 +1127,62 @@ void Option::parseKeyValue(
 
 	usage(stderr);
 	exitGame(EXIT_FAILURE);
+}
+
+////////////////////////////////////////////////////////////////
+// オプションの引数の初期化処理(文字列)
+// const char *optarg : オプションの引数
+// return : 初期化フラグ
+////////////////////////////////////////////////////////////////
+
+bool Option::parseResetString(const char *optarg)
+{
+	if (optarg == NULL)
+		return false;
+
+	std::string str = "";
+	for (int i = 0; optarg[i] != '\0'; i++)
+		str += toupper(optarg[i]);
+
+	if (str == "INIT")
+		return true;
+	if (str == "RESET")
+		return true;
+	if (str == "DEFAULT")
+		return true;
+	if (str == "_DEFAULT")
+		return true;
+	if (str == ".")
+		return true;
+
+	// フラグでなかった
+
+	return false;
+}
+
+////////////////////////////////////////////////////////////////
+// オプションの引数の初期化処理(数値)
+// const char *optarg : オプションの引数
+// return : 初期化フラグ
+////////////////////////////////////////////////////////////////
+
+bool Option::parseResetFile(const char *optarg)
+{
+	if (optarg == NULL)
+		return false;
+
+	std::string str = "";
+	for (int i = 0; optarg[i] != '\0'; i++)
+		str += toupper(optarg[i]);
+
+	if (str == ".")
+		return true;
+	if (str == "..")
+		return true;
+
+	// フラグでなかった
+
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1169,6 +1305,181 @@ char Option::parseChar(const char *optarg)
 		return errChar;
 
 	return c;
+}
+
+////////////////////////////////////////////////////////////////
+// フラグの配列の初期値を取得
+// OptionIdx idx : 配列のインデックス
+// return : フラグ
+////////////////////////////////////////////////////////////////
+
+bool Option::getFlagDefault(OptionIdx idx)
+{
+	switch (idx) {
+	case OPTION_IDX_INIT:
+		return false;
+	case OPTION_IDX_SAVE:
+		return false;
+	case OPTION_IDX_STAR_NUMBER:
+		break;
+	case OPTION_IDX_FULL_SCREEN:
+		return false;
+	case OPTION_IDX_FPS:
+	case OPTION_IDX_BG_FILE:
+	case OPTION_IDX_INTERVAL_AUTO:
+	case OPTION_IDX_AUTO_KEY:
+	case OPTION_IDX_X_SPEED:
+	case OPTION_IDX_Y_SPEED:
+	case OPTION_IDX_Z_SPEED:
+		break;
+	case OPTION_IDX_REVERSE_X:
+		return false;
+	case OPTION_IDX_REVERSE_Y:
+		return true;
+	case OPTION_IDX_REVERSE_Z:
+		return false;
+	case OPTION_IDX_REVERSE_SHIFT:
+		return false;
+	case OPTION_IDX_VERSION:
+	case OPTION_IDX_HELP:
+	case OPTION_IDX_DEBUG:
+	case OPTION_IDX_MAX:
+		break;
+	}
+
+	return false;
+}
+
+////////////////////////////////////////////////////////////////
+// 数値の配列の初期値を取得
+// OptionIdx idx : 配列のインデックス
+// return : 数値
+////////////////////////////////////////////////////////////////
+
+double Option::getNumDefault(OptionIdx idx)
+{
+	switch (idx) {
+	case OPTION_IDX_INIT:
+	case OPTION_IDX_SAVE:
+		break;
+	case OPTION_IDX_STAR_NUMBER:
+		return 10240;
+	case OPTION_IDX_FULL_SCREEN:
+		break;
+	case OPTION_IDX_FPS:
+		return 30;
+	case OPTION_IDX_BG_FILE:
+		break;
+	case OPTION_IDX_INTERVAL_AUTO:
+		return 30;
+	case OPTION_IDX_AUTO_KEY:
+		break;
+	case OPTION_IDX_X_SPEED:
+		return 0.0;
+	case OPTION_IDX_Y_SPEED:
+		return 0.0;
+	case OPTION_IDX_Z_SPEED:
+		return 0.01;
+	case OPTION_IDX_REVERSE_X:
+	case OPTION_IDX_REVERSE_Y:
+	case OPTION_IDX_REVERSE_Z:
+	case OPTION_IDX_REVERSE_SHIFT:
+	case OPTION_IDX_VERSION:
+	case OPTION_IDX_HELP:
+	case OPTION_IDX_DEBUG:
+	case OPTION_IDX_MAX:
+		break;
+	}
+
+	return 0.0;
+}
+
+////////////////////////////////////////////////////////////////
+// キーの配列の初期値を文字列に変換して取得
+// OptionIdx idx : 配列のインデックス
+// return : キー
+////////////////////////////////////////////////////////////////
+
+std::string Option::getKeyStringDefault(OptionIdx idx)
+{
+	if (idx < 0)
+		return " ";
+	if (idx >= OPTION_IDX_MAX)
+		return " ";
+
+	return convertKeyToString(getKeyDefault(idx));
+}
+
+////////////////////////////////////////////////////////////////
+// キーの配列の初期値を取得
+// OptionIdx idx : 配列のインデックス
+// return : キー
+////////////////////////////////////////////////////////////////
+
+int Option::getKeyDefault(OptionIdx idx)
+{
+	switch (idx) {
+	case OPTION_IDX_INIT:
+	case OPTION_IDX_SAVE:
+	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_FULL_SCREEN:
+	case OPTION_IDX_FPS:
+	case OPTION_IDX_BG_FILE:
+	case OPTION_IDX_INTERVAL_AUTO:
+		break;
+	case OPTION_IDX_AUTO_KEY:
+		return '\0';
+	case OPTION_IDX_X_SPEED:
+	case OPTION_IDX_Y_SPEED:
+	case OPTION_IDX_Z_SPEED:
+	case OPTION_IDX_REVERSE_X:
+	case OPTION_IDX_REVERSE_Y:
+	case OPTION_IDX_REVERSE_Z:
+	case OPTION_IDX_REVERSE_SHIFT:
+	case OPTION_IDX_VERSION:
+	case OPTION_IDX_HELP:
+	case OPTION_IDX_DEBUG:
+	case OPTION_IDX_MAX:
+		break;
+	}
+
+	return '\0';
+}
+
+////////////////////////////////////////////////////////////////
+// ファイル名の配列の初期値を取得
+// OptionIdx idx : 配列のインデックス
+// return : ファイル名
+////////////////////////////////////////////////////////////////
+
+std::string Option::getFileDefault(OptionIdx idx)
+{
+	switch (idx) {
+	case OPTION_IDX_INIT:
+	case OPTION_IDX_SAVE:
+	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_FULL_SCREEN:
+	case OPTION_IDX_FPS:
+		break;
+	case OPTION_IDX_BG_FILE:
+		return "";
+	case OPTION_IDX_INTERVAL_AUTO:
+	case OPTION_IDX_AUTO_KEY:
+	case OPTION_IDX_X_SPEED:
+	case OPTION_IDX_Y_SPEED:
+	case OPTION_IDX_Z_SPEED:
+	case OPTION_IDX_REVERSE_X:
+	case OPTION_IDX_REVERSE_Y:
+	case OPTION_IDX_REVERSE_Z:
+	case OPTION_IDX_REVERSE_SHIFT:
+	case OPTION_IDX_VERSION:
+	case OPTION_IDX_HELP:
+	case OPTION_IDX_DEBUG:
+	case OPTION_IDX_MAX:
+		break;
+	}
+
+	return "";
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1298,7 +1609,11 @@ void Option::setCaption(char key, const std::string &str)
 
 void Option::setGraphDir(const std::string &dir)
 {
-	graphDir = dir;
+	if ((dir == ".") || (dir == ".."))
+		graphDir = DEFAULT_GRAPH_DIR;
+	else
+		graphDir = dir;
+
 	flagModifiedGraphDir = true;
 }
 
@@ -1309,7 +1624,11 @@ void Option::setGraphDir(const std::string &dir)
 
 void Option::setMusicDir(const std::string &dir)
 {
-	musicDir = dir;
+	if ((dir == ".") || (dir == ".."))
+		musicDir = DEFAULT_MUSIC_DIR;
+	else
+		musicDir = dir;
+
 	flagModifiedMusicDir = true;
 }
 
