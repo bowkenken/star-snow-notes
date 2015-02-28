@@ -36,6 +36,12 @@
 /* Define to 1 if you have the `SDL' library (-lSDL). */
 #undef HAVE_LIBSDL
 
+/* Define to 1 if you have the `SDL/SDL_mixer' library (-lSDL/SDL_mixer). */
+#undef HAVE_LIBSDL_SDL_MIXER
+
+/* Define to 1 if you have the `SDL/SDL_opengl' library (-lSDL/SDL_opengl). */
+#undef HAVE_LIBSDL_SDL_OPENGL
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
@@ -53,6 +59,9 @@
 
 /* Define to 1 if you have the <SDL/SDL.h> header file. */
 #undef HAVE_SDL_SDL_H
+
+/* Define to 1 if you have the <SDL/SDL_mixer.h> header file. */
+#undef HAVE_SDL_SDL_MIXER_H
 
 /* Define to 1 if you have the <SDL/SDL_opengl.h> header file. */
 #undef HAVE_SDL_SDL_OPENGL_H

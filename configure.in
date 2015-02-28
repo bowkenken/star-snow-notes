@@ -20,7 +20,9 @@ AC_PROG_MAKE_SET
 # Checks for libraries.
 AC_CHECK_LIB([m], [sin])
 AC_CHECK_LIB([GL], [glClear])
-AC_CHECK_LIB([SDL], [SDL/SDL_opengl])
+AC_CHECK_LIB([SDL], [SDL_Init])
+AC_CHECK_LIB([SDL/SDL_opengl], [SDL_GL_SwapBuffers])
+AC_CHECK_LIB([SDL/SDL_mixer], [Mix_OpenAudio])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -29,7 +31,7 @@ AC_CHECK_HEADERS([stdlib.h stddef.h stdio.h stdarg.h])
 AC_CHECK_HEADERS([limits.h string.h ctype.h time.h math.h])
 AC_CHECK_HEADERS([unistd.h dirent.h sys/stat.h])
 AC_CHECK_HEADERS([getopt.h])
-AC_CHECK_HEADERS([SDL/SDL.h SDL/SDL_opengl.h])
+AC_CHECK_HEADERS([SDL/SDL.h SDL/SDL_opengl.h SDL/SDL_mixer.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

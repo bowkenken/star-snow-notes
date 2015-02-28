@@ -1,4 +1,4 @@
-﻿/* src/config.h.  Generated from config.h.in by configure.  */
+/* src/config.h.  Generated from config.h.in by configure.  */
 /* src/config.h.in.  Generated from configure.in by autoheader.  */
 
 /* Define to 1 if you have the `cos' function. */
@@ -35,7 +35,13 @@
 #define HAVE_LIBM 1
 
 /* Define to 1 if you have the `SDL' library (-lSDL). */
-/* #undef HAVE_LIBSDL */
+#define HAVE_LIBSDL 1
+
+/* Define to 1 if you have the `SDL/SDL_mixer' library (-lSDL/SDL_mixer). */
+/* #undef HAVE_LIBSDL_SDL_MIXER */
+
+/* Define to 1 if you have the `SDL/SDL_opengl' library (-lSDL/SDL_opengl). */
+/* #undef HAVE_LIBSDL_SDL_OPENGL */
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
@@ -54,6 +60,9 @@
 
 /* Define to 1 if you have the <SDL/SDL.h> header file. */
 #define HAVE_SDL_SDL_H 1
+
+/* Define to 1 if you have the <SDL/SDL_mixer.h> header file. */
+#define HAVE_SDL_SDL_MIXER_H 1
 
 /* Define to 1 if you have the <SDL/SDL_opengl.h> header file. */
 #define HAVE_SDL_SDL_OPENGL_H 1

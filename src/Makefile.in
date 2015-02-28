@@ -71,7 +71,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_star_snow_notes_OBJECTS = main.$(OBJEXT) FileList.$(OBJEXT) \
 	Star.$(OBJEXT) Space.$(OBJEXT) ControlPanel.$(OBJEXT) \
-	Button.$(OBJEXT) Option.$(OBJEXT)
+	Button.$(OBJEXT) Option.$(OBJEXT) Music.$(OBJEXT)
 star_snow_notes_OBJECTS = $(am_star_snow_notes_OBJECTS)
 star_snow_notes_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -209,7 +209,7 @@ AM_CXXFLAGS = $(CFLAGS_DEBUG) -Wall \
 	`sdl-config --cflags `
 
 AM_LDFLAGS = \
-	`sdl-config --libs` -lSDL_image \
+	`sdl-config --libs` -lSDL_image -lSDL_mixer \
 	-lGL -lGLU -lglut
 
 star_snow_notes_SOURCES = \
@@ -218,7 +218,8 @@ star_snow_notes_SOURCES = \
 	Star.h Star.cpp Space.h Space.cpp \
 	ControlPanel.h ControlPanel.cpp \
 	Button.h Button.cpp \
-	Option.h Option.cpp 
+	Option.h Option.cpp \
+	Music.h Music.cpp 
 
 EXTRA_DIST = 
 all: config.h
@@ -324,6 +325,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Button.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ControlPanel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileList.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Music.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Option.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Space.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Star.Po@am__quote@
