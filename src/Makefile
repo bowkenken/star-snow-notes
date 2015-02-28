@@ -71,7 +71,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_star_snow_notes_OBJECTS = main.$(OBJEXT) FileList.$(OBJEXT) \
 	Star.$(OBJEXT) Space.$(OBJEXT) ControlPanel.$(OBJEXT) \
-	Button.$(OBJEXT) Option.$(OBJEXT)
+	Button.$(OBJEXT) Option.$(OBJEXT) Music.$(OBJEXT)
 star_snow_notes_OBJECTS = $(am_star_snow_notes_OBJECTS)
 star_snow_notes_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.
@@ -127,7 +127,7 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LDFLAGS = 
 LIBOBJS = 
-LIBS = -lGL -lm 
+LIBS = -lSDL -lGL -lm 
 LN_S = ln -s
 LTLIBOBJS = 
 MAKEINFO = ${SHELL} /home/dud/src/star-snow-notes/star-snow-notes/config/missing --run makeinfo
@@ -209,7 +209,7 @@ AM_CXXFLAGS = $(CFLAGS_DEBUG) -Wall \
 	`sdl-config --cflags `
 
 AM_LDFLAGS = \
-	`sdl-config --libs` -lSDL_image \
+	`sdl-config --libs` -lSDL_image -lSDL_mixer \
 	-lGL -lGLU -lglut
 
 star_snow_notes_SOURCES = \
@@ -218,7 +218,8 @@ star_snow_notes_SOURCES = \
 	Star.h Star.cpp Space.h Space.cpp \
 	ControlPanel.h ControlPanel.cpp \
 	Button.h Button.cpp \
-	Option.h Option.cpp 
+	Option.h Option.cpp \
+	Music.h Music.cpp 
 
 EXTRA_DIST = 
 all: config.h
@@ -324,6 +325,7 @@ distclean-compile:
 include ./$(DEPDIR)/Button.Po
 include ./$(DEPDIR)/ControlPanel.Po
 include ./$(DEPDIR)/FileList.Po
+include ./$(DEPDIR)/Music.Po
 include ./$(DEPDIR)/Option.Po
 include ./$(DEPDIR)/Space.Po
 include ./$(DEPDIR)/Star.Po

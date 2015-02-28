@@ -905,8 +905,6 @@ void Option::parseOption(int argc, char **argv)
 			continue;
 #endif	// HAVE_GETOPT_LONG
 
-		//@@@ if (c <= -1)
-		//@@@ 	break;
 		if (c < ' ')
 			break;
 
@@ -926,10 +924,10 @@ void Option::parseOption(int argc, char **argv)
 			idx = OPTION_IDX_STAR_NUMBER;
 			break;
 		case 'W':
-			setNum(OPTION_IDX_WIDTH, parseNum(optarg));
+			idx = OPTION_IDX_WIDTH;
 			break;
 		case 'H':
-			setNum(OPTION_IDX_HEIGHT, parseNum(optarg));
+			idx = OPTION_IDX_HEIGHT;
 			break;
 		case 'f':
 			idx = OPTION_IDX_FULL_SCREEN;
@@ -986,6 +984,8 @@ void Option::parseOption(int argc, char **argv)
 				setFlag(idx, parseFlag(optarg));
 			break;
 		case 'n':
+		case 'W':
+		case 'H':
 		case 'F':
 		case 'A':
 			if (parseResetString(optarg))
@@ -1036,6 +1036,8 @@ void Option::parseOption(int argc, char **argv)
 		case '?':
 		case ':':
 		default:
+			::fprintf(stderr, "Invalid option: '-%c'\n",
+				(char)c);
 			usage(stderr);
 			exitGame(EXIT_FAILURE);
 			break;
@@ -1344,6 +1346,8 @@ bool Option::getFlagDefault(OptionIdx idx)
 	case OPTION_IDX_SAVE:
 		return false;
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_WIDTH:
+	case OPTION_IDX_HEIGHT:
 		break;
 	case OPTION_IDX_FULL_SCREEN:
 		return false;
@@ -1387,6 +1391,10 @@ double Option::getNumDefault(OptionIdx idx)
 		break;
 	case OPTION_IDX_STAR_NUMBER:
 		return 10240;
+	case OPTION_IDX_WIDTH:
+		return 1920 / 2;
+	case OPTION_IDX_HEIGHT:
+		return 1080 / 2;
 	case OPTION_IDX_FULL_SCREEN:
 		break;
 	case OPTION_IDX_FPS:
@@ -1445,6 +1453,8 @@ int Option::getKeyDefault(OptionIdx idx)
 	case OPTION_IDX_INIT:
 	case OPTION_IDX_SAVE:
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_WIDTH:
+	case OPTION_IDX_HEIGHT:
 	case OPTION_IDX_FULL_SCREEN:
 	case OPTION_IDX_FPS:
 	case OPTION_IDX_BG_FILE:
@@ -1481,6 +1491,8 @@ std::string Option::getFileDefault(OptionIdx idx)
 	case OPTION_IDX_INIT:
 	case OPTION_IDX_SAVE:
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_WIDTH:
+	case OPTION_IDX_HEIGHT:
 	case OPTION_IDX_FULL_SCREEN:
 	case OPTION_IDX_FPS:
 		break;

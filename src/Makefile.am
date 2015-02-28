@@ -16,7 +16,7 @@ AM_CXXFLAGS = $(CFLAGS_DEBUG) -Wall \
 	-DD_GTK \
 	`sdl-config --cflags `
 AM_LDFLAGS = \
-	`sdl-config --libs` -lSDL_image \
+	`sdl-config --libs` -lSDL_image -lSDL_mixer \
 	-lGL -lGLU -lglut
 
 bin_PROGRAMS = star-snow-notes
@@ -26,6 +26,7 @@ star_snow_notes_SOURCES = \
 	Star.h Star.cpp Space.h Space.cpp \
 	ControlPanel.h ControlPanel.cpp \
 	Button.h Button.cpp \
-	Option.h Option.cpp 
+	Option.h Option.cpp \
+	Music.h Music.cpp 
 
 EXTRA_DIST = 

@@ -35,6 +35,7 @@
 #include "FileList.h"
 #include "Space.h"
 #include "ControlPanel.h"
+#include "Music.h"
 
 using namespace StarSnowNotes;
 
@@ -53,7 +54,8 @@ bool gDecelerateZFlag = false;
 
 Option *gOption, *gSetting;
 Space *gMainSpace;
-StarSnowNotes::ControlPanel *gMainControlPanel;
+ControlPanel *gMainControlPanel;
+Music *gMainMusic;
 
 ////////////////////////////////////////////////////////////////
 // プロトタイプ
@@ -98,7 +100,7 @@ int main(int argc, char **argv)
 	gMainSpace->setFlagFreezed(false);
 	gMainSpace->setFlagDraw(true);
 
-	gMainControlPanel = new StarSnowNotes::ControlPanel();
+	gMainControlPanel = new ControlPanel();
 	gMainControlPanel->init(gSetting);
 	gMainControlPanel->setFlagFreezed(false);
 	gMainControlPanel->setFlagDraw(true);
@@ -127,6 +129,10 @@ int main(int argc, char **argv)
 		gSetting->getNum(OPTION_IDX_WIDTH),
 		gSetting->getNum(OPTION_IDX_HEIGHT));
 
+	gMainMusic = new Music();
+	gMainMusic->init(gSetting);
+	gMainMusic->playRandom();
+
 	::mainLoop();
 
 	::exitGame(EXIT_SUCCESS);
@@ -139,7 +145,7 @@ int main(int argc, char **argv)
 
 static void initScreen(int *argc, char **argv)
 {
-	if (::SDL_Init(SDL_INIT_VIDEO) <= -1) {
+	if (::SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) <= -1) {
 		fprintf(stderr, "Error: Initialize SDL: %s\n",
 			::SDL_GetError());
 		exit(EXIT_FAILURE);

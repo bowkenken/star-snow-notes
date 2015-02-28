@@ -1,4 +1,4 @@
-FileList.o: FileList.cpp GameMain.h config.h /usr/include/stdlib.h \
+Music.o: Music.cpp GameMain.h config.h /usr/include/stdlib.h \
  /usr/include/features.h /usr/include/i386-linux-gnu/bits/predefs.h \
  /usr/include/i386-linux-gnu/sys/cdefs.h \
  /usr/include/i386-linux-gnu/bits/wordsize.h \
@@ -108,15 +108,16 @@ FileList.o: FileList.cpp GameMain.h config.h /usr/include/stdlib.h \
  /usr/include/SDL/SDL_opengl.h /usr/include/GL/gl.h \
  /usr/include/GL/glext.h /usr/include/GL/glu.h \
  /usr/include/SDL/SDL_mixer.h /usr/include/SDL/SDL_types.h \
- /usr/include/GL/glut.h /usr/include/GL/freeglut_std.h FileList.h \
- /usr/include/unistd.h /usr/include/i386-linux-gnu/bits/posix_opt.h \
+ /usr/include/GL/glut.h /usr/include/GL/freeglut_std.h Option.h \
+ FileList.h /usr/include/unistd.h \
+ /usr/include/i386-linux-gnu/bits/posix_opt.h \
  /usr/include/i386-linux-gnu/bits/environments.h \
  /usr/include/i386-linux-gnu/bits/confname.h /usr/include/getopt.h \
  /usr/include/dirent.h /usr/include/i386-linux-gnu/bits/dirent.h \
  /usr/include/i386-linux-gnu/bits/posix1_lim.h \
  /usr/include/i386-linux-gnu/bits/local_lim.h /usr/include/linux/limits.h \
  /usr/include/i386-linux-gnu/sys/stat.h \
- /usr/include/i386-linux-gnu/bits/stat.h
+ /usr/include/i386-linux-gnu/bits/stat.h Music.h
 
 GameMain.h:
 
@@ -440,6 +441,8 @@ config.h:
 
 /usr/include/GL/freeglut_std.h:
 
+Option.h:
+
 FileList.h:
 
 /usr/include/unistd.h:
@@ -465,3 +468,5 @@ FileList.h:
 /usr/include/i386-linux-gnu/sys/stat.h:
 
 /usr/include/i386-linux-gnu/bits/stat.h:
+
+Music.h:
