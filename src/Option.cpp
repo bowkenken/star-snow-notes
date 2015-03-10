@@ -59,17 +59,17 @@ static const char *COMMON_CONFIG_FILE = "ssn-conf.txt";
 static const char *GRAPH_CONFIG_FILE = "ssn-graph-conf.txt";
 
 static const char gStringOption[]
-	= "is:n:W:H:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
+	= "is:n:F:W:H:f:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
 
 #ifdef	HAVE_GETOPT_LONG
 static const struct option	gLongOption[] = {
 	{ "init",           no_argument,       NULL, 'i' },
 	{ "save",           required_argument, NULL, 's' },
 	{ "star-number",    required_argument, NULL, 'n' },
+	{ "fps",            required_argument, NULL, 'F' },
 	{ "width",          required_argument, NULL, 'W' },
 	{ "height",         required_argument, NULL, 'H' },
 	{ "full-screen",    required_argument, NULL, 'f' },
-	{ "fps",            required_argument, NULL, 'F' },
 	{ "bg-file",        required_argument, NULL, 'b' },
 	{ "interval-auto",  required_argument, NULL, 'A' },
 	{ "auto-key",       required_argument, NULL, 'a' },
@@ -97,10 +97,10 @@ static const char	gStringUsage[] = {
 	"  -i, --init                initialize settings\n"
 	"  -s, --save=FLAG           save settings\n"
 	"  -n, --star-number=NUM     set BG star number\n"
+	"  -F, --fps=NUM             set frame per second\n"
 	"  -W, --width=NUM           set screen width\n"
 	"  -H, --height=NUM          set screen height\n"
 	"  -f, --full-screen=FLAG    set full screen mode\n"
-	"  -F, --fps=NUM             set frame per second\n"
 	"  -b, --bg-file=FILE        select BG file\n"
 	"  -A, --interval-auto=NUM   set interval of auto generate\n"
 	"  -a, --auto-key=KEY        auto generate star by key\n"
@@ -155,10 +155,10 @@ void Option::init()
 	OptionTypeArray[OPTION_IDX_INIT] = OPTION_TYPE_FLAG;
 	OptionTypeArray[OPTION_IDX_SAVE] = OPTION_TYPE_FLAG;
 	OptionTypeArray[OPTION_IDX_STAR_NUMBER] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_FPS] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_WIDTH] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_HEIGHT] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_FULL_SCREEN] = OPTION_TYPE_FLAG;
-	OptionTypeArray[OPTION_IDX_FPS] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_BG_FILE] = OPTION_TYPE_FILE;
 	OptionTypeArray[OPTION_IDX_INTERVAL_AUTO] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_AUTO_KEY] = OPTION_TYPE_KEY;
@@ -176,10 +176,10 @@ void Option::init()
 		getFlagDefault(OPTION_IDX_SAVE));
 	setNum(OPTION_IDX_STAR_NUMBER,
 		getNumDefault(OPTION_IDX_STAR_NUMBER));
-	setFlag(OPTION_IDX_FULL_SCREEN,
-		getFlagDefault(OPTION_IDX_FULL_SCREEN));
 	setNum(OPTION_IDX_FPS,
 		getNumDefault(OPTION_IDX_FPS));
+	setFlag(OPTION_IDX_FULL_SCREEN,
+		getFlagDefault(OPTION_IDX_FULL_SCREEN));
 	setFile(OPTION_IDX_BG_FILE,
 		getFileDefault(OPTION_IDX_BG_FILE));
 	setNum(OPTION_IDX_INTERVAL_AUTO,
@@ -810,6 +810,11 @@ void Option::saveGraphConfigContents(FILE *fp)
 		(long)getNum(OPTION_IDX_STAR_NUMBER));
 	printfConfig(fp, "\n");
 
+	printfConfig(fp, "# frame per second\n");
+	printfConfig(fp, "--fps %ld\n",
+		(long)getNum(OPTION_IDX_FPS));
+	printfConfig(fp, "\n");
+
 	printfConfig(fp, "# screen width\n");
 	printfConfig(fp, "--width %ld\n",
 		(long)getNum(OPTION_IDX_WIDTH));
@@ -823,11 +828,6 @@ void Option::saveGraphConfigContents(FILE *fp)
 	printfConfig(fp, "# flag of full screen\n");
 	printfConfig(fp, "--full-screen %s\n",
 		quoteString(getFlagString(OPTION_IDX_FULL_SCREEN)).c_str());
-	printfConfig(fp, "\n");
-
-	printfConfig(fp, "# frame per second\n");
-	printfConfig(fp, "--fps %ld\n",
-		(long)getNum(OPTION_IDX_FPS));
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# file of back ground\n");
@@ -1046,6 +1046,9 @@ void Option::parseOption(int argc, char **argv)
 		case 'n':
 			idx = OPTION_IDX_STAR_NUMBER;
 			break;
+		case 'F':
+			idx = OPTION_IDX_FPS;
+			break;
 		case 'W':
 			idx = OPTION_IDX_WIDTH;
 			break;
@@ -1054,9 +1057,6 @@ void Option::parseOption(int argc, char **argv)
 			break;
 		case 'f':
 			idx = OPTION_IDX_FULL_SCREEN;
-			break;
-		case 'F':
-			idx = OPTION_IDX_FPS;
 			break;
 		case 'b':
 			idx = OPTION_IDX_BG_FILE;
@@ -1107,9 +1107,9 @@ void Option::parseOption(int argc, char **argv)
 				setFlag(idx, parseFlag(optarg));
 			break;
 		case 'n':
+		case 'F':
 		case 'W':
 		case 'H':
-		case 'F':
 		case 'A':
 			if (parseResetString(optarg))
 				setNum(idx, getNumDefault(idx));
@@ -1469,12 +1469,12 @@ bool Option::getFlagDefault(OptionIdx idx)
 	case OPTION_IDX_SAVE:
 		return false;
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_FPS:
 	case OPTION_IDX_WIDTH:
 	case OPTION_IDX_HEIGHT:
 		break;
 	case OPTION_IDX_FULL_SCREEN:
 		return false;
-	case OPTION_IDX_FPS:
 	case OPTION_IDX_BG_FILE:
 	case OPTION_IDX_INTERVAL_AUTO:
 	case OPTION_IDX_AUTO_KEY:
@@ -1514,14 +1514,14 @@ double Option::getNumDefault(OptionIdx idx)
 		break;
 	case OPTION_IDX_STAR_NUMBER:
 		return 10240;
+	case OPTION_IDX_FPS:
+		return 30;
 	case OPTION_IDX_WIDTH:
 		return 1920 / 2;
 	case OPTION_IDX_HEIGHT:
 		return 1080 / 2;
 	case OPTION_IDX_FULL_SCREEN:
 		break;
-	case OPTION_IDX_FPS:
-		return 30;
 	case OPTION_IDX_BG_FILE:
 		break;
 	case OPTION_IDX_INTERVAL_AUTO:
@@ -1576,10 +1576,10 @@ int Option::getKeyDefault(OptionIdx idx)
 	case OPTION_IDX_INIT:
 	case OPTION_IDX_SAVE:
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_FPS:
 	case OPTION_IDX_WIDTH:
 	case OPTION_IDX_HEIGHT:
 	case OPTION_IDX_FULL_SCREEN:
-	case OPTION_IDX_FPS:
 	case OPTION_IDX_BG_FILE:
 	case OPTION_IDX_INTERVAL_AUTO:
 		break;
@@ -1614,10 +1614,10 @@ std::string Option::getFileDefault(OptionIdx idx)
 	case OPTION_IDX_INIT:
 	case OPTION_IDX_SAVE:
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_FPS:
 	case OPTION_IDX_WIDTH:
 	case OPTION_IDX_HEIGHT:
 	case OPTION_IDX_FULL_SCREEN:
-	case OPTION_IDX_FPS:
 		break;
 	case OPTION_IDX_BG_FILE:
 		return "";

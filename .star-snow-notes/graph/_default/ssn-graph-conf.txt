@@ -6,6 +6,9 @@
 # number of star
 --star-number 10240
 
+# frame per second
+--fps 30
+
 # screen width
 --width 960
 
@@ -14,9 +17,6 @@
 
 # flag of full screen
 --full-screen "false"
-
-# frame per second
---fps 30
 
 # file of back ground
 --bg-file ""
