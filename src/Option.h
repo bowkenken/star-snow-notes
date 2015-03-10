@@ -156,6 +156,7 @@ private:
 	// void init();
 
 	// void loadAllConfig(Option *opt);
+	void loadConfigVersion(FILE *fp);
 	void loadCommonConfig();
 	void loadGraphConfig();
 	void loadConfig(std::string path);
@@ -163,6 +164,10 @@ private:
 
 	bool loadConfigToken(std::string *str, FILE *fp);
 	char loadConfigEscapeChar(FILE *fp);
+
+	long compareVerion(
+		long mjr1, long mnr1, long pat1,
+		long mjr2, long mnr2, long pat2);
 
 	void transConfigStringToArgv(
 		int *argc, char ***argv, ArgStrArray *argStr);

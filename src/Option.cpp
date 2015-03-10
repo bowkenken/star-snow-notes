@@ -269,13 +269,19 @@ void Option::loadConfig(std::string path)
 {
 	// 設定ファイルの読み込み
 
+	// オープン
 	FILE *fp = openConfig(path.c_str(), "r");
 	if (fp == NULL)
 		return;
 
+	// バージョンのチェック
+	loadConfigVersion(fp);
+
+	// 設定の内容
 	ArgStrArray argStr;
 	loadConfigContents(&argStr, fp);
 
+	// クローズ
 	closeConfig(fp);
 
 	// 引数に変換
@@ -290,6 +296,96 @@ void Option::loadConfig(std::string path)
 	// 引数として解析
 
 	parseOption(argc, argv);
+}
+
+////////////////////////////////////////////////////////////////
+// バージョン番号の読み込み
+// FILE *fp : 設定のファイル
+////////////////////////////////////////////////////////////////
+
+void Option::loadConfigVersion(FILE *fp)
+{
+	// ::fprintf(stderr, "loadConfigVersion - begin\n");
+
+	//// ヘッダーのチェック
+
+	// ヘッダーのタイトル部
+	char title[1023 + 1];
+	::sprintf(title, "# %s\n", STRING_GAME_TITLE);
+
+	// タイトルを読み込み
+	char line[1023 + 1];
+	if (::fgets(line, sizeof(line), fp) == NULL) {
+		::perror("ERROR");
+
+		::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "title: %s", line);
+
+	// タイトルを比較
+	if (::strcmp(line, title) != 0) {
+		::fprintf(stderr, "ERROR: Invalid header:\n");
+		::fprintf(stderr, "  %s", line);
+
+		::exitGame(EXIT_FAILURE);
+	}
+
+	// 設定ファイルの種類を読み捨てる
+	if (::fgets(line, sizeof(line), fp) == NULL) {
+		::perror("ERROR");
+
+		::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "config: %s", line);
+
+	// プログラムのバージョンを読み捨てる
+	// "# Program Ver.x.x.x\n"
+	if (::fgets(line, sizeof(line), fp) == NULL) {
+		::perror("ERROR");
+
+		::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "prog ver: %s", line);
+
+	//// バージョンのチェック
+
+	// 設定ファイルのバージョンを読み込み
+	// "# Config Ver.x.x.x\n"
+	long mjr, mnr, pat;
+	if (::fgets(line, sizeof(line), fp) == NULL) {
+		::perror("ERROR");
+
+		::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "config ver: %s", line);
+
+	// 数字に変換
+	if (::sscanf(line, "# Config Ver.%ld.%ld.%ld\n",
+		&mjr, &mnr, &pat) < 3)
+	{
+		::fprintf(stderr, "Warning: Invalid version:\n");
+		::fprintf(stderr, "  '%s'\n", line);
+
+		// ::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "scan ver: %ld.%ld.%ld\n", mjr, mnr, pat);
+
+	// 設定ファイルのバージョン
+	const long curMjr = OPTION_VERSION_MAJOR;
+	const long curMnr = OPTION_VERSION_MINOR;
+	const long curPat = OPTION_VERSION_PATCH;
+	// ::fprintf(stderr, "cur  ver: %ld.%ld.%ld\n",
+	// 	curMjr, curMnr, curPat);
+
+	// 設定ファイルのバージョンを比較
+	if (compareVerion(mjr, mnr, pat, curMjr, curMnr, curPat) > 0) {
+		::fprintf(stderr, "ERROR: Config version is large:\n");
+		::fprintf(stderr, "  %s", line);
+
+		::exitGame(EXIT_FAILURE);
+	}
+
+	// ::fprintf(stderr, "loadConfigVersion - end\n\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -427,6 +523,33 @@ char Option::loadConfigEscapeChar(FILE *fp)
 	}
 
 	return c;
+}
+
+////////////////////////////////////////////////////////////////
+// バージョン番号の比較
+// return : 比較結果
+////////////////////////////////////////////////////////////////
+
+long Option::compareVerion(
+	long mjr1, long mnr1, long pat1,
+	long mjr2, long mnr2, long pat2)
+{
+	if (mjr1 > mjr2)
+		return +1;
+	if (mjr1 < mjr2)
+		return -1;
+
+	if (mnr1 > mnr2)
+		return +1;
+	if (mnr1 < mnr2)
+		return -1;
+
+	if (pat1 > pat2)
+		return +1;
+	if (pat1 < pat2)
+		return -1;
+
+	return +-0;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -635,7 +758,7 @@ void Option::saveCommonConfigContents(FILE *fp)
 		return;
 
 	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
-	printfConfig(fp, "# Common Config file\n");
+	printfConfig(fp, "# Common Config File\n");
 
 	saveConfigVersion(fp);
 	printfConfig(fp, "\n");
@@ -677,7 +800,7 @@ void Option::saveGraphConfigContents(FILE *fp)
 		return;
 
 	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
-	printfConfig(fp, "# Graphic Config file\n");
+	printfConfig(fp, "# Graphic Config File\n");
 
 	saveConfigVersion(fp);
 	printfConfig(fp, "\n");
@@ -1025,11 +1148,11 @@ void Option::parseOption(int argc, char **argv)
 		case 'V':
 		case 'v':
 			version(stdout);
-			exitGame(EXIT_SUCCESS);
+			::exitGame(EXIT_SUCCESS);
 			break;
 		case 'h':
 			usage(stdout);
-			exitGame(EXIT_SUCCESS);
+			::exitGame(EXIT_SUCCESS);
 			break;
 		case '\0':
 			break;
@@ -1039,7 +1162,7 @@ void Option::parseOption(int argc, char **argv)
 			::fprintf(stderr, "Invalid option: '-%c'\n",
 				(char)c);
 			usage(stderr);
-			exitGame(EXIT_FAILURE);
+			::exitGame(EXIT_FAILURE);
 			break;
 		}
 	}
