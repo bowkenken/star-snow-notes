@@ -178,6 +178,10 @@ void Option::init()
 		getNumDefault(OPTION_IDX_STAR_NUMBER));
 	setNum(OPTION_IDX_FPS,
 		getNumDefault(OPTION_IDX_FPS));
+	setNum(OPTION_IDX_WIDTH,
+		getNumDefault(OPTION_IDX_WIDTH));
+	setNum(OPTION_IDX_HEIGHT,
+		getNumDefault(OPTION_IDX_HEIGHT));
 	setFlag(OPTION_IDX_FULL_SCREEN,
 		getFlagDefault(OPTION_IDX_FULL_SCREEN));
 	setFile(OPTION_IDX_BG_FILE,
