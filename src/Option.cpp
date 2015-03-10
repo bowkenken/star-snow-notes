@@ -59,17 +59,17 @@ static const char *COMMON_CONFIG_FILE = "ssn-conf.txt";
 static const char *GRAPH_CONFIG_FILE = "ssn-graph-conf.txt";
 
 static const char gStringOption[]
-	= "is:n:W:H:f:F:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
+	= "is:n:F:W:H:f:b:A:a:x:y:z:X:Y:Z:R:Vvhd";
 
 #ifdef	HAVE_GETOPT_LONG
 static const struct option	gLongOption[] = {
 	{ "init",           no_argument,       NULL, 'i' },
 	{ "save",           required_argument, NULL, 's' },
 	{ "star-number",    required_argument, NULL, 'n' },
+	{ "fps",            required_argument, NULL, 'F' },
 	{ "width",          required_argument, NULL, 'W' },
 	{ "height",         required_argument, NULL, 'H' },
 	{ "full-screen",    required_argument, NULL, 'f' },
-	{ "fps",            required_argument, NULL, 'F' },
 	{ "bg-file",        required_argument, NULL, 'b' },
 	{ "interval-auto",  required_argument, NULL, 'A' },
 	{ "auto-key",       required_argument, NULL, 'a' },
@@ -97,10 +97,10 @@ static const char	gStringUsage[] = {
 	"  -i, --init                initialize settings\n"
 	"  -s, --save=FLAG           save settings\n"
 	"  -n, --star-number=NUM     set BG star number\n"
+	"  -F, --fps=NUM             set frame per second\n"
 	"  -W, --width=NUM           set screen width\n"
 	"  -H, --height=NUM          set screen height\n"
 	"  -f, --full-screen=FLAG    set full screen mode\n"
-	"  -F, --fps=NUM             set frame per second\n"
 	"  -b, --bg-file=FILE        select BG file\n"
 	"  -A, --interval-auto=NUM   set interval of auto generate\n"
 	"  -a, --auto-key=KEY        auto generate star by key\n"
@@ -155,10 +155,10 @@ void Option::init()
 	OptionTypeArray[OPTION_IDX_INIT] = OPTION_TYPE_FLAG;
 	OptionTypeArray[OPTION_IDX_SAVE] = OPTION_TYPE_FLAG;
 	OptionTypeArray[OPTION_IDX_STAR_NUMBER] = OPTION_TYPE_NUM;
+	OptionTypeArray[OPTION_IDX_FPS] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_WIDTH] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_HEIGHT] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_FULL_SCREEN] = OPTION_TYPE_FLAG;
-	OptionTypeArray[OPTION_IDX_FPS] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_BG_FILE] = OPTION_TYPE_FILE;
 	OptionTypeArray[OPTION_IDX_INTERVAL_AUTO] = OPTION_TYPE_NUM;
 	OptionTypeArray[OPTION_IDX_AUTO_KEY] = OPTION_TYPE_KEY;
@@ -176,10 +176,14 @@ void Option::init()
 		getFlagDefault(OPTION_IDX_SAVE));
 	setNum(OPTION_IDX_STAR_NUMBER,
 		getNumDefault(OPTION_IDX_STAR_NUMBER));
-	setFlag(OPTION_IDX_FULL_SCREEN,
-		getFlagDefault(OPTION_IDX_FULL_SCREEN));
 	setNum(OPTION_IDX_FPS,
 		getNumDefault(OPTION_IDX_FPS));
+	setNum(OPTION_IDX_WIDTH,
+		getNumDefault(OPTION_IDX_WIDTH));
+	setNum(OPTION_IDX_HEIGHT,
+		getNumDefault(OPTION_IDX_HEIGHT));
+	setFlag(OPTION_IDX_FULL_SCREEN,
+		getFlagDefault(OPTION_IDX_FULL_SCREEN));
 	setFile(OPTION_IDX_BG_FILE,
 		getFileDefault(OPTION_IDX_BG_FILE));
 	setNum(OPTION_IDX_INTERVAL_AUTO,
@@ -269,13 +273,19 @@ void Option::loadConfig(std::string path)
 {
 	// 設定ファイルの読み込み
 
+	// オープン
 	FILE *fp = openConfig(path.c_str(), "r");
 	if (fp == NULL)
 		return;
 
+	// バージョンのチェック
+	loadConfigVersion(fp);
+
+	// 設定の内容
 	ArgStrArray argStr;
 	loadConfigContents(&argStr, fp);
 
+	// クローズ
 	closeConfig(fp);
 
 	// 引数に変換
@@ -290,6 +300,96 @@ void Option::loadConfig(std::string path)
 	// 引数として解析
 
 	parseOption(argc, argv);
+}
+
+////////////////////////////////////////////////////////////////
+// バージョン番号の読み込み
+// FILE *fp : 設定のファイル
+////////////////////////////////////////////////////////////////
+
+void Option::loadConfigVersion(FILE *fp)
+{
+	// ::fprintf(stderr, "loadConfigVersion - begin\n");
+
+	//// ヘッダーのチェック
+
+	// ヘッダーのタイトル部
+	char title[1023 + 1];
+	::sprintf(title, "# %s\n", STRING_GAME_TITLE);
+
+	// タイトルを読み込み
+	char line[1023 + 1];
+	if (::fgets(line, sizeof(line), fp) == NULL) {
+		::perror("ERROR");
+
+		::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "title: %s", line);
+
+	// タイトルを比較
+	if (::strcmp(line, title) != 0) {
+		::fprintf(stderr, "ERROR: Invalid header:\n");
+		::fprintf(stderr, "  %s", line);
+
+		::exitGame(EXIT_FAILURE);
+	}
+
+	// 設定ファイルの種類を読み捨てる
+	if (::fgets(line, sizeof(line), fp) == NULL) {
+		::perror("ERROR");
+
+		::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "config: %s", line);
+
+	// プログラムのバージョンを読み捨てる
+	// "# Program Ver.x.x.x\n"
+	if (::fgets(line, sizeof(line), fp) == NULL) {
+		::perror("ERROR");
+
+		::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "prog ver: %s", line);
+
+	//// バージョンのチェック
+
+	// 設定ファイルのバージョンを読み込み
+	// "# Config Ver.x.x.x\n"
+	long mjr, mnr, pat;
+	if (::fgets(line, sizeof(line), fp) == NULL) {
+		::perror("ERROR");
+
+		::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "config ver: %s", line);
+
+	// 数字に変換
+	if (::sscanf(line, "# Config Ver.%ld.%ld.%ld\n",
+		&mjr, &mnr, &pat) < 3)
+	{
+		::fprintf(stderr, "Warning: Invalid version:\n");
+		::fprintf(stderr, "  '%s'\n", line);
+
+		// ::exitGame(EXIT_FAILURE);
+	}
+	// ::fprintf(stderr, "scan ver: %ld.%ld.%ld\n", mjr, mnr, pat);
+
+	// 設定ファイルのバージョン
+	const long curMjr = OPTION_VERSION_MAJOR;
+	const long curMnr = OPTION_VERSION_MINOR;
+	const long curPat = OPTION_VERSION_PATCH;
+	// ::fprintf(stderr, "cur  ver: %ld.%ld.%ld\n",
+	// 	curMjr, curMnr, curPat);
+
+	// 設定ファイルのバージョンを比較
+	if (compareVerion(mjr, mnr, pat, curMjr, curMnr, curPat) > 0) {
+		::fprintf(stderr, "ERROR: Config version is large:\n");
+		::fprintf(stderr, "  %s", line);
+
+		::exitGame(EXIT_FAILURE);
+	}
+
+	// ::fprintf(stderr, "loadConfigVersion - end\n\n");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -427,6 +527,33 @@ char Option::loadConfigEscapeChar(FILE *fp)
 	}
 
 	return c;
+}
+
+////////////////////////////////////////////////////////////////
+// バージョン番号の比較
+// return : 比較結果
+////////////////////////////////////////////////////////////////
+
+long Option::compareVerion(
+	long mjr1, long mnr1, long pat1,
+	long mjr2, long mnr2, long pat2)
+{
+	if (mjr1 > mjr2)
+		return +1;
+	if (mjr1 < mjr2)
+		return -1;
+
+	if (mnr1 > mnr2)
+		return +1;
+	if (mnr1 < mnr2)
+		return -1;
+
+	if (pat1 > pat2)
+		return +1;
+	if (pat1 < pat2)
+		return -1;
+
+	return +-0;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -635,7 +762,7 @@ void Option::saveCommonConfigContents(FILE *fp)
 		return;
 
 	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
-	printfConfig(fp, "# Common Config file\n");
+	printfConfig(fp, "# Common Config File\n");
 
 	saveConfigVersion(fp);
 	printfConfig(fp, "\n");
@@ -677,7 +804,7 @@ void Option::saveGraphConfigContents(FILE *fp)
 		return;
 
 	printfConfig(fp, "# %s\n", STRING_GAME_TITLE);
-	printfConfig(fp, "# Graphic Config file\n");
+	printfConfig(fp, "# Graphic Config File\n");
 
 	saveConfigVersion(fp);
 	printfConfig(fp, "\n");
@@ -685,6 +812,11 @@ void Option::saveGraphConfigContents(FILE *fp)
 	printfConfig(fp, "# number of star\n");
 	printfConfig(fp, "--star-number %ld\n",
 		(long)getNum(OPTION_IDX_STAR_NUMBER));
+	printfConfig(fp, "\n");
+
+	printfConfig(fp, "# frame per second\n");
+	printfConfig(fp, "--fps %ld\n",
+		(long)getNum(OPTION_IDX_FPS));
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# screen width\n");
@@ -700,11 +832,6 @@ void Option::saveGraphConfigContents(FILE *fp)
 	printfConfig(fp, "# flag of full screen\n");
 	printfConfig(fp, "--full-screen %s\n",
 		quoteString(getFlagString(OPTION_IDX_FULL_SCREEN)).c_str());
-	printfConfig(fp, "\n");
-
-	printfConfig(fp, "# frame per second\n");
-	printfConfig(fp, "--fps %ld\n",
-		(long)getNum(OPTION_IDX_FPS));
 	printfConfig(fp, "\n");
 
 	printfConfig(fp, "# file of back ground\n");
@@ -923,6 +1050,9 @@ void Option::parseOption(int argc, char **argv)
 		case 'n':
 			idx = OPTION_IDX_STAR_NUMBER;
 			break;
+		case 'F':
+			idx = OPTION_IDX_FPS;
+			break;
 		case 'W':
 			idx = OPTION_IDX_WIDTH;
 			break;
@@ -931,9 +1061,6 @@ void Option::parseOption(int argc, char **argv)
 			break;
 		case 'f':
 			idx = OPTION_IDX_FULL_SCREEN;
-			break;
-		case 'F':
-			idx = OPTION_IDX_FPS;
 			break;
 		case 'b':
 			idx = OPTION_IDX_BG_FILE;
@@ -984,9 +1111,9 @@ void Option::parseOption(int argc, char **argv)
 				setFlag(idx, parseFlag(optarg));
 			break;
 		case 'n':
+		case 'F':
 		case 'W':
 		case 'H':
-		case 'F':
 		case 'A':
 			if (parseResetString(optarg))
 				setNum(idx, getNumDefault(idx));
@@ -1025,11 +1152,11 @@ void Option::parseOption(int argc, char **argv)
 		case 'V':
 		case 'v':
 			version(stdout);
-			exitGame(EXIT_SUCCESS);
+			::exitGame(EXIT_SUCCESS);
 			break;
 		case 'h':
 			usage(stdout);
-			exitGame(EXIT_SUCCESS);
+			::exitGame(EXIT_SUCCESS);
 			break;
 		case '\0':
 			break;
@@ -1039,7 +1166,7 @@ void Option::parseOption(int argc, char **argv)
 			::fprintf(stderr, "Invalid option: '-%c'\n",
 				(char)c);
 			usage(stderr);
-			exitGame(EXIT_FAILURE);
+			::exitGame(EXIT_FAILURE);
 			break;
 		}
 	}
@@ -1346,12 +1473,12 @@ bool Option::getFlagDefault(OptionIdx idx)
 	case OPTION_IDX_SAVE:
 		return false;
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_FPS:
 	case OPTION_IDX_WIDTH:
 	case OPTION_IDX_HEIGHT:
 		break;
 	case OPTION_IDX_FULL_SCREEN:
 		return false;
-	case OPTION_IDX_FPS:
 	case OPTION_IDX_BG_FILE:
 	case OPTION_IDX_INTERVAL_AUTO:
 	case OPTION_IDX_AUTO_KEY:
@@ -1391,14 +1518,14 @@ double Option::getNumDefault(OptionIdx idx)
 		break;
 	case OPTION_IDX_STAR_NUMBER:
 		return 10240;
+	case OPTION_IDX_FPS:
+		return 30;
 	case OPTION_IDX_WIDTH:
 		return 1920 / 2;
 	case OPTION_IDX_HEIGHT:
 		return 1080 / 2;
 	case OPTION_IDX_FULL_SCREEN:
 		break;
-	case OPTION_IDX_FPS:
-		return 30;
 	case OPTION_IDX_BG_FILE:
 		break;
 	case OPTION_IDX_INTERVAL_AUTO:
@@ -1453,10 +1580,10 @@ int Option::getKeyDefault(OptionIdx idx)
 	case OPTION_IDX_INIT:
 	case OPTION_IDX_SAVE:
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_FPS:
 	case OPTION_IDX_WIDTH:
 	case OPTION_IDX_HEIGHT:
 	case OPTION_IDX_FULL_SCREEN:
-	case OPTION_IDX_FPS:
 	case OPTION_IDX_BG_FILE:
 	case OPTION_IDX_INTERVAL_AUTO:
 		break;
@@ -1491,10 +1618,10 @@ std::string Option::getFileDefault(OptionIdx idx)
 	case OPTION_IDX_INIT:
 	case OPTION_IDX_SAVE:
 	case OPTION_IDX_STAR_NUMBER:
+	case OPTION_IDX_FPS:
 	case OPTION_IDX_WIDTH:
 	case OPTION_IDX_HEIGHT:
 	case OPTION_IDX_FULL_SCREEN:
-	case OPTION_IDX_FPS:
 		break;
 	case OPTION_IDX_BG_FILE:
 		return "";
