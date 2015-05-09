@@ -1,74 +1,185 @@
 .\"
-.\" Copyright (c) 2013-2014 YOSHIMURA, Tomohiko
+.\" Copyright (c) 2013-2015 YOSHIMURA, Tomohiko
 .\"	all rights reserved.
 .\"
-.TH star-snow-notes 6 "3 September 2014" "Ver. 1.0.0" "Demo"
+.TH star-snow-notes 6 "9 May 2015" "Ver. 1.0.0" "Demo"
 .\"****************************************************************
-.SH ̾��
-Star Snow Notes (����ҳ�����)
+.SH 名前
+Star Snow Notes (星雪航海日誌)
 .\"****************************************************************
-.SH ��
-.B "star-snow-notes"
-.\".B "[\-Vh]"
-.B "[\-Vh]"
+.SH 書式
+.B "star\-snow\-notes OPTION GRAPHIC\-DIR MUSIC\-DIR"
+.B "[\-is:n:F:W:H:f:b:A:a:x:y:z:X:Y:Z:R:Vvh]"
+.B "[\-\-init]"
+.B "[\-\-save=FLAG]"
+.B "[\-\-star\-number=NUM]"
+.B "[\-\-fps=NUM]"
+.B "[\-\-width=NUM]"
+.B "[\-\-height=NUM]"
+.B "[\-\-full\-screen=FLAG]"
+.B "[\-\-bg\-file=FILE]"
+.B "[\-\-interval\-auto=NUM]"
+.B "[\-\-auto\-key=KEY]"
+.B "[\-\-x\-speed=NUM]"
+.B "[\-\-y\-speed=NUM]"
+.B "[\-\-z\-speed=NUM]"
+.B "[\-\-reverse\-x=FLAG]"
+.B "[\-\-reverse\-y=FLAG]"
+.B "[\-\-reverse\-z=FLAG]"
+.B "[\-\-reverse\-shift=FLAG]"
 .B "[\-\-version]"
 .B "[\-\-help]"
 .\"****************************************************************
-.SH ����
-.B "Star Snow Notes (����ҳ�����)"
-�����γ���ɺ���ǥ⡦���ץ�Ǥ���
+.SH 説明
+.B "Star Snow Notes (星雪航海日誌)"
+は星の海を漂うデモ・アプリです。
 .br
-�ޥ����䥭�����Ϥ��͡���ŷ�Τ�ƤӽФ��ޤ���
+マウスやキー入力で様々な天体を呼び出せます。
 .br
 .PP
 .\"****************************************************************
-.SH �����ˡ
-�������롦�������ƥ󡦥����򲡤��Ȥ��������ز�®���ޤ���
-.TP
-��������
-.br
-7 8 9
-.br
- \\|/ 
-.br
-4\- \-6
-.br
- /|\\ 
-.br
-1 2 3
+.SH 操作方法
+カーソル・キーかテン・キーを押すとその方向へ加速します。
 .PP
 .TP
-\-/+ PageUp/PageDown ����
+\-/+ PageUp/PageDownキー
 .br
-���ʡ�����
+前進／後退します。
+.PP
+.TP
+0/Delete
+.br
+X,Y方向の移動を停止します。
+.PP
+.TP
+\/,Insertキー
+.br
+天体の自動生成をON/OFFします。
+.PP
+.TP
+A〜Zキー
+.br
+各天体を生成します。
+.PP
+.TP
+Enterキー
+.br
+直前の天体を再度生成します。
+.PP
+.TP
+スペース・キー
+.br
+天体をランダムに生成します。
+.PP
+.TP
+\^キー
+.br
+フル・スクリーン・モードとウィンドウ・モードを切り換えます。
+.PP
+.TP
+Ctrl + Sキー
+.br
+現在の設定を保存します。
 .PP
 .\"****************************************************************
-.SH ���ץ����
+.SH オプション
+.TP
+.B "star-snow-notes OPTION GRAPHIC-DIR MUSIC-DIR"
+.TP
+.B "GRAPHIC\-DIR"
+設定ディレクトリの下の画像ディレクトリ名を指定します。
+.br
+デフォルトは_defaultです。
+.br
+"_"で始まるディレクトリ名は予約されているので使わないで下さい。
+.br
+"例: star-snow-notes _itokawa"
+.TP
+.B "MUSIC\-DIR"
+設定ディレクトリの下のBGMディレクトリ名を指定します。
+.br
+デフォルトは_defaultです。
+.br
+\_noneを指定するとBGMを再生しません。
+.br
+"_"で始まるディレクトリ名は予約されているので使わないで下さい。
+.br
+"例: star-snow-notes _default _none"
+.TP
+.B "\-i, \-\-init"
+設定を初期化する。
+.TP
+.B "\-s, \-\-save=FLAG"
+設定を保存するかを指定する。
+.TP
+.B "\-n, \-\-star\-number=NUM"
+背景の星の数を指定する。
+.TP
+.B "\-F, \-\-fps=NUM"
+画面の1秒当たりの更新頻度をfpsで指定する。
+.TP
+.B "\-W, \-\-width=NUM"
+画面の幅を指定する。
+.TP
+.B "\-H, \-\-height=NUM"
+画面の高さを指定する。
+.TP
+.B "\-f, \-\-full\-screen=FLAG"
+全画面モードにするかを指定する。
+.TP
+.B "\-b, \-\-bg\-file=FILE"
+背景画像ディレクトリの中にある画像ファイルを指定する。
+.TP
+.B "\-A, \-\-interval\-auto=NUM"
+天体の自動生成の間隔をfpsで指定する。
+.TP
+.B "\-a, \-\-auto\-key=KEY"
+自動生成する天体の種類をキーで指定する。
+.TP
+.B "\-x, \-\-x\-speed=NUM"
+X方向の速度を0.0〜1.0の範囲で指定する。
+.TP
+.B "\-y, \-\-y\-speed=NUM"
+Y方向の速度を0.0〜1.0の範囲で指定する。
+.TP
+.B "\-z, \-\-z\-speed=NUM"
+Z方向の速度を0.0〜1.0の範囲で指定する。
+.TP
+.B "\-X, \-\-reverse\-x=FLAG"
+X方向のキー入力を反転するかを指定する。
+.TP
+.B "\-Y, \-\-reverse\-y=FLAG"
+Y方向のキー入力を反転するかを指定する。
+.TP
+.B "\-Z, \-\-reverse\-z=FLAG"
+Z方向のキー入力を反転するかを指定する。
+.TP
+.B "\-R, \-\-reverse\-shift=FLAG"
 .TP
 .B "\-V, \-\-version"
-�С�������ɸ����Ϥ˽��Ϥ������ｪλ���롣
+バージョンを標準出力に出力して正常終了する。
 .TP
 .B "\-h, \-\-help"
-����ˡ��ɸ����Ϥ˽��Ϥ������ｪλ���롣
+利用法を標準出力に出力して正常終了する。
 .\"****************************************************************
-.SH �ե�����
+.SH ファイル
 .TP
 .I "~/.star-snow-notes/"
-�ƥ桼����Υǡ�������¸����ǥ��쥯�ȥꡣ
+各ユーザ毎のデータを保存するディレクトリ。
 .\"****************************************************************
-.SH �Ķ��ѿ�
+.SH 環境変数
 .TP
 .B "HOME"
-�桼���Υۡ��ࡦ�ǥ��쥯�ȥꡣ
+ユーザのホーム・ディレクトリ。
 .\"****************************************************************
-.SH �Х�
-���ߤ��Υ�����ϥ١������ƥ�����Ǥ���
+.SH バグ
+現在このゲームはベータ・テスト中です。
 .\"****************************************************************
-.SH ����
+.SH 著者
 .br
 Star Snow Notes
 .br
-Copyright (c) 2013-2014 YOSHIMURA, Tomohiko All rights reserved.
+Copyright (c) 2013-2015 YOSHIMURA, Tomohiko All rights reserved.
 .br
 
 .I URL   : https://github.com/bowkenken/star-snow-notes
@@ -79,6 +190,8 @@ Copyright (c) 2013-2014 YOSHIMURA, Tomohiko All rights reserved.
 .br
 
 Created by BowKenKen
+.br
+Music Production by Presence of Music
 .br
 Special Thanks you
 .br
